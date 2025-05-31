@@ -1,0 +1,40 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "goboilerplate"]
+
+  redisinsight:
+    image: redislabs/redisinsight:latest
+    ports:
+      - 5540:5540
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:14-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - ~/apps/goboilerplate:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=goboilerplate
+      - POSTGRES_USER=goboilerplate
+      - POSTGRES_DB=goboilerplate
+
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: goboilerplate
+      RABBITMQ_DEFAULT_PASS: goboilerplate
+
+volumes:
+  redis_data:

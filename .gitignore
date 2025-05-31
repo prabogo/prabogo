@@ -1,0 +1,12 @@
+.idea/
+.misc/
+go.sum
+coverage.html
+coverage.profile
+.env
+__debug_bin*
+var
+etc
+cover 
+cover.out
+.DS_Store
