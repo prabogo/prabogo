@@ -16,12 +16,12 @@ WORKDIR /app
 ## executable of our Go program
 RUN go mod tidy
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o goboilerplate ./cmd
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o prabogo ./cmd
 
 FROM alpine:3.14  
 
-COPY --from=builder /app/goboilerplate .
+COPY --from=builder /app/prabogo .
 COPY --from=builder /app/internal/migration/postgres internal/migration/postgres
 COPY --from=builder /app/.env.example .env
 
-ENTRYPOINT ["./goboilerplate"]
+ENTRYPOINT ["./prabogo"]

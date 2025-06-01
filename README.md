@@ -37,13 +37,13 @@ To run the application directly (without Makefile or Docker), ensure all require
 Start the app with:
 
 ```sh
-go run main.go <option>
+go run cmd/main.go <option>
 ```
 
 Replace `<option>` with any command-line arguments your application supports. For example:
 
 ```sh
-go run main.go http
+go run cmd/main.go http
 ```
 
 Make sure external dependencies (such as PostgreSQL, RabbitMQ, and Redis) are running, either via Docker Compose or another method.
