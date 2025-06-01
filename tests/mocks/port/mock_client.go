@@ -5,7 +5,7 @@
 package mock_outbound_port
 
 import (
-	model "go-boilerplate/internal/model"
+	model "prabogo/internal/model"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"

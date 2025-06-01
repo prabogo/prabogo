@@ -7,8 +7,8 @@ import (
 
 	"github.com/pressly/goose/v3"
 
-	"go-boilerplate/utils"
-	"go-boilerplate/utils/log"
+	"prabogo/utils"
+	"prabogo/utils/log"
 )
 
 func InitDatabase(ctx context.Context, outboundDatabaseDriver string) *sql.DB {

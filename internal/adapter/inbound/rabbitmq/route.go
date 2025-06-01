@@ -4,10 +4,10 @@ import (
 	"context"
 	"os"
 
-	"go-boilerplate/internal/model"
-	inbound_port "go-boilerplate/internal/port/inbound"
-	"go-boilerplate/utils/log"
-	"go-boilerplate/utils/rabbitmq"
+	"prabogo/internal/model"
+	inbound_port "prabogo/internal/port/inbound"
+	"prabogo/utils/log"
+	"prabogo/utils/rabbitmq"
 )
 
 func InitRoute(

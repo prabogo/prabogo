@@ -1,6 +1,6 @@
 package outbound_port
 
-import "go-boilerplate/internal/model"
+import "prabogo/internal/model"
 
 //go:generate mockgen -source=client.go -destination=./../../../tests/mocks/port/mock_client.go
 type ClientDatabasePort interface {

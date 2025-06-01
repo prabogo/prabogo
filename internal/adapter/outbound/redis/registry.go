@@ -1,7 +1,7 @@
 package redis_outbound_adapter
 
 import (
-	outbound_port "go-boilerplate/internal/port/outbound"
+	outbound_port "prabogo/internal/port/outbound"
 )
 
 type adapter struct {

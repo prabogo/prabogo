@@ -4,7 +4,7 @@ import (
 	"embed"
 	"os"
 
-	"go-boilerplate/internal"
+	"prabogo/internal"
 )
 
 var embedMigrations embed.FS

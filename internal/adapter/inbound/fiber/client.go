@@ -6,10 +6,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/palantir/stacktrace"
 
-	"go-boilerplate/internal/domain"
-	"go-boilerplate/internal/model"
-	inbound_port "go-boilerplate/internal/port/inbound"
-	"go-boilerplate/utils/activity"
+	"prabogo/internal/domain"
+	"prabogo/internal/model"
+	inbound_port "prabogo/internal/port/inbound"
+	"prabogo/utils/activity"
 )
 
 type clientAdapter struct {

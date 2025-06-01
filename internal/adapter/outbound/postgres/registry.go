@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	outbound_port "go-boilerplate/internal/port/outbound"
+	outbound_port "prabogo/internal/port/outbound"
 )
 
 type adapter struct {

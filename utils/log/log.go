@@ -5,7 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"go-boilerplate/utils/activity"
+	"prabogo/utils/activity"
 )
 
 const (

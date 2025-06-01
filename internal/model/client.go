@@ -1,7 +1,7 @@
 package model
 
 import (
-	"go-boilerplate/utils"
+	"prabogo/utils"
 	"time"
 )
 

@@ -6,7 +6,7 @@ services:
     volumes:
       - redis_data:/data
     restart: unless-stopped
-    command: ["redis-server", "--requirepass", "goboilerplate"]
+    command: ["redis-server", "--requirepass", "prabogo"]
 
   redisinsight:
     image: redislabs/redisinsight:latest
@@ -21,11 +21,11 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - ~/apps/goboilerplate:/var/lib/postgresql/data
+      - ~/apps/prabogo:/var/lib/postgresql/data
     environment:
-      - POSTGRES_PASSWORD=goboilerplate
-      - POSTGRES_USER=goboilerplate
-      - POSTGRES_DB=goboilerplate
+      - POSTGRES_PASSWORD=prabogo
+      - POSTGRES_USER=prabogo
+      - POSTGRES_DB=prabogo
 
   rabbitmq:
     image: rabbitmq:4.0-management
@@ -33,8 +33,8 @@ services:
       - 5672:5672
       - 15672:15672
     environment:
-      RABBITMQ_DEFAULT_USER: goboilerplate
-      RABBITMQ_DEFAULT_PASS: goboilerplate
+      RABBITMQ_DEFAULT_USER: prabogo
+      RABBITMQ_DEFAULT_PASS: prabogo
 
 volumes:
   redis_data:

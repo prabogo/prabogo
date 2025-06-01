@@ -190,8 +190,8 @@ inbound-http-fiber:
 		echo "package fiber_inbound_adapter" >> $$FIBER_ADAPTER_DST; \
 		echo "" >> $$FIBER_ADAPTER_DST; \
 		echo "import (" >> $$FIBER_ADAPTER_DST; \
-		echo "\t\"go-boilerplate/internal/domain\"" >> $$FIBER_ADAPTER_DST; \
-		echo "\tinbound_port \"go-boilerplate/internal/port/inbound\"" >> $$FIBER_ADAPTER_DST; \
+		echo "\t\"prabogo/internal/domain\"" >> $$FIBER_ADAPTER_DST; \
+		echo "\tinbound_port \"prabogo/internal/port/inbound\"" >> $$FIBER_ADAPTER_DST; \
 		echo ")" >> $$FIBER_ADAPTER_DST; \
 		echo "" >> $$FIBER_ADAPTER_DST; \
 		echo "type $${LOWER}Adapter struct {" >> $$FIBER_ADAPTER_DST; \
@@ -261,8 +261,8 @@ inbound-message-rabbitmq:
 		echo "package rabbitmq_inbound_adapter" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "import (" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\t\"go-boilerplate/internal/domain\"" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\tinbound_port \"go-boilerplate/internal/port/inbound\"" >> $$RABBITMQ_ADAPTER_DST; \
+		echo "\t\"prabogo/internal/domain\"" >> $$RABBITMQ_ADAPTER_DST; \
+		echo "\tinbound_port \"prabogo/internal/port/inbound\"" >> $$RABBITMQ_ADAPTER_DST; \
 		echo ")" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "type $${LOWER}Adapter struct {" >> $$RABBITMQ_ADAPTER_DST; \
@@ -333,8 +333,8 @@ inbound-command:
 		echo "package command_inbound_adapter" >> $$COMMAND_ADAPTER_DST; \
 		echo "" >> $$COMMAND_ADAPTER_DST; \
 		echo "import (" >> $$COMMAND_ADAPTER_DST; \
-		echo "\t\"go-boilerplate/internal/domain\"" >> $$COMMAND_ADAPTER_DST; \
-		echo "\tinbound_port \"go-boilerplate/internal/port/inbound\"" >> $$COMMAND_ADAPTER_DST; \
+		echo "\t\"prabogo/internal/domain\"" >> $$COMMAND_ADAPTER_DST; \
+		echo "\tinbound_port \"prabogo/internal/port/inbound\"" >> $$COMMAND_ADAPTER_DST; \
 		echo ")" >> $$COMMAND_ADAPTER_DST; \
 		echo "" >> $$COMMAND_ADAPTER_DST; \
 		echo "type $${LOWER}Adapter struct {" >> $$COMMAND_ADAPTER_DST; \
@@ -405,7 +405,7 @@ outbound-database-postgres:
 		echo "package postgres_outbound_adapter" >> $$POSTGRES_ADAPTER_DST; \
 		echo "" >> $$POSTGRES_ADAPTER_DST; \
 		echo "import (" >> $$POSTGRES_ADAPTER_DST; \
-		echo "\toutbound_port \"go-boilerplate/internal/port/outbound\"" >> $$POSTGRES_ADAPTER_DST; \
+		echo "\toutbound_port \"prabogo/internal/port/outbound\"" >> $$POSTGRES_ADAPTER_DST; \
 		echo ")" >> $$POSTGRES_ADAPTER_DST; \
 		echo "" >> $$POSTGRES_ADAPTER_DST; \
 		echo "const table$${PASCAL} = \"$${LOWER}s\"" >> $$POSTGRES_ADAPTER_DST; \
@@ -479,7 +479,7 @@ outbound-http:
 		echo "package http_outbound_adapter" >> $$HTTP_ADAPTER_DST; \
 		echo "" >> $$HTTP_ADAPTER_DST; \
 		echo "import (" >> $$HTTP_ADAPTER_DST; \
-		echo "\toutbound_port \"go-boilerplate/internal/port/outbound\"" >> $$HTTP_ADAPTER_DST; \
+		echo "\toutbound_port \"prabogo/internal/port/outbound\"" >> $$HTTP_ADAPTER_DST; \
 		echo ")" >> $$HTTP_ADAPTER_DST; \
 		echo "" >> $$HTTP_ADAPTER_DST; \
 		echo "type $${LOWER}Adapter struct {}" >> $$HTTP_ADAPTER_DST; \
@@ -546,7 +546,7 @@ outbound-message-rabbitmq:
 		echo "package rabbitmq_outbound_adapter" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "import (" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\toutbound_port \"go-boilerplate/internal/port/outbound\"" >> $$RABBITMQ_ADAPTER_DST; \
+		echo "\toutbound_port \"prabogo/internal/port/outbound\"" >> $$RABBITMQ_ADAPTER_DST; \
 		echo ")" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "type $${LOWER}Adapter struct {}" >> $$RABBITMQ_ADAPTER_DST; \
@@ -613,7 +613,7 @@ outbound-cache-redis:
 		echo "package redis_outbound_adapter" >> $$REDIS_ADAPTER_DST; \
 		echo "" >> $$REDIS_ADAPTER_DST; \
 		echo "import (" >> $$REDIS_ADAPTER_DST; \
-		echo "\toutbound_port \"go-boilerplate/internal/port/outbound\"" >> $$REDIS_ADAPTER_DST; \
+		echo "\toutbound_port \"prabogo/internal/port/outbound\"" >> $$REDIS_ADAPTER_DST; \
 		echo ")" >> $$REDIS_ADAPTER_DST; \
 		echo "" >> $$REDIS_ADAPTER_DST; \
 		echo "type $${LOWER}Adapter struct {}" >> $$REDIS_ADAPTER_DST; \

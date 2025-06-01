@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	inbound_port "go-boilerplate/internal/port/inbound"
+	inbound_port "prabogo/internal/port/inbound"
 )
 
 func InitRoute(

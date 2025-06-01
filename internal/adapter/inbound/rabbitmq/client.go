@@ -3,11 +3,11 @@ package rabbitmq_inbound_adapter
 import (
 	"context"
 	"encoding/json"
-	"go-boilerplate/internal/domain"
-	"go-boilerplate/internal/model"
-	inbound_port "go-boilerplate/internal/port/inbound"
-	"go-boilerplate/utils/activity"
-	"go-boilerplate/utils/log"
+	"prabogo/internal/domain"
+	"prabogo/internal/model"
+	inbound_port "prabogo/internal/port/inbound"
+	"prabogo/utils/activity"
+	"prabogo/utils/log"
 )
 
 type clientAdapter struct {

@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	inbound_port "go-boilerplate/internal/port/inbound"
-	"go-boilerplate/utils"
+	inbound_port "prabogo/internal/port/inbound"
+	"prabogo/utils"
 )
 
 type pingAdapter struct{}

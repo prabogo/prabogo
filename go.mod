@@ -1,4 +1,4 @@
-module go-boilerplate
+module prabogo
 
 go 1.23.0
 

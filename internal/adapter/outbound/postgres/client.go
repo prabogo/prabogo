@@ -1,8 +1,8 @@
 package postgres_outbound_adapter
 
 import (
-	"go-boilerplate/internal/model"
-	outbound_port "go-boilerplate/internal/port/outbound"
+	"prabogo/internal/model"
+	outbound_port "prabogo/internal/port/outbound"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"

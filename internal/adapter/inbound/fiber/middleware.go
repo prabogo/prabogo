@@ -1,10 +1,10 @@
 package fiber_inbound_adapter
 
 import (
-	"go-boilerplate/internal/domain"
-	"go-boilerplate/internal/model"
-	"go-boilerplate/utils/activity"
 	"os"
+	"prabogo/internal/domain"
+	"prabogo/internal/model"
+	"prabogo/utils/activity"
 
 	"github.com/gofiber/fiber/v2"
 )

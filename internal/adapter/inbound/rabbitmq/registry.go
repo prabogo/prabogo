@@ -1,8 +1,8 @@
 package rabbitmq_inbound_adapter
 
 import (
-	"go-boilerplate/internal/domain"
-	inbound_port "go-boilerplate/internal/port/inbound"
+	"prabogo/internal/domain"
+	inbound_port "prabogo/internal/port/inbound"
 )
 
 type adapter struct {
