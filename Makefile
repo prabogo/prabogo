@@ -74,7 +74,7 @@ model:
 	echo "" >> $$DST; \
 	echo "type $$UPPER struct {" >> $$DST; \
 	echo "\tID int \`json:\"id\" db:\"id\"\`" >> $$DST; \
-	echo "\tClientInput" >> $$DST; \
+	echo "\t$${UPPER}Input" >> $$DST; \
 	echo "}" >> $$DST; \
 	echo "" >> $$DST; \
 	echo "type $${UPPER}Input struct {" >> $$DST; \
@@ -86,7 +86,7 @@ model:
 	echo "\tIDs []int \`json:\"ids\"\`" >> $$DST; \
 	echo "}" >> $$DST; \
 	echo "" >> $$DST; \
-	echo "func $${UPPER}Prepare(v *ClientInput) {" >> $$DST; \
+	echo "func $${UPPER}Prepare(v *$${UPPER}Input) {" >> $$DST; \
 	echo "\tv.CreatedAt = time.Now()" >> $$DST; \
 	echo "\tv.UpdatedAt = time.Now()" >> $$DST; \
 	echo "}" >> $$DST; \
@@ -163,8 +163,10 @@ inbound-http-fiber:
 	fi
 	@LOWER=$$(echo $(VAL) | tr '[:upper:]' '[:lower:]'); \
 	if [[ "$$LOWER" == *_* ]]; then \
+		CAMEL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {$$1=$$1; for(i=2;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 		PASCAL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {for(i=1;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 	else \
+		CAMEL=$$(echo $$LOWER); \
 		PASCAL=$$(echo $$LOWER | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}'); \
 	fi; \
 	DST=internal/port/inbound/$${LOWER}.go; \
@@ -194,14 +196,14 @@ inbound-http-fiber:
 		echo "\tinbound_port \"prabogo/internal/port/inbound\"" >> $$FIBER_ADAPTER_DST; \
 		echo ")" >> $$FIBER_ADAPTER_DST; \
 		echo "" >> $$FIBER_ADAPTER_DST; \
-		echo "type $${LOWER}Adapter struct {" >> $$FIBER_ADAPTER_DST; \
+		echo "type $${CAMEL}Adapter struct {" >> $$FIBER_ADAPTER_DST; \
 		echo "\tdomain domain.Domain" >> $$FIBER_ADAPTER_DST; \
 		echo "}" >> $$FIBER_ADAPTER_DST; \
 		echo "" >> $$FIBER_ADAPTER_DST; \
 		echo "func New$${PASCAL}Adapter(" >> $$FIBER_ADAPTER_DST; \
 		echo "\tdomain domain.Domain," >> $$FIBER_ADAPTER_DST; \
 		echo ") inbound_port.$${PASCAL}HttpPort {" >> $$FIBER_ADAPTER_DST; \
-		echo "\treturn &$${LOWER}Adapter{" >> $$FIBER_ADAPTER_DST; \
+		echo "\treturn &$${CAMEL}Adapter{" >> $$FIBER_ADAPTER_DST; \
 		echo "\t\tdomain: domain," >> $$FIBER_ADAPTER_DST; \
 		echo "\t}" >> $$FIBER_ADAPTER_DST; \
 		echo "}" >> $$FIBER_ADAPTER_DST; \
@@ -234,8 +236,10 @@ inbound-message-rabbitmq:
 	fi
 	@LOWER=$$(echo $(VAL) | tr '[:upper:]' '[:lower:]'); \
 	if [[ "$$LOWER" == *_* ]]; then \
+		CAMEL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {$$1=$$1; for(i=2;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 		PASCAL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {for(i=1;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 	else \
+		CAMEL=$$(echo $$LOWER); \
 		PASCAL=$$(echo $$LOWER | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}'); \
 	fi; \
 	DST=internal/port/inbound/$${LOWER}.go; \
@@ -265,14 +269,14 @@ inbound-message-rabbitmq:
 		echo "\tinbound_port \"prabogo/internal/port/inbound\"" >> $$RABBITMQ_ADAPTER_DST; \
 		echo ")" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "type $${LOWER}Adapter struct {" >> $$RABBITMQ_ADAPTER_DST; \
+		echo "type $${CAMEL}Adapter struct {" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "\tdomain domain.Domain" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "}" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "func New$${PASCAL}Adapter(" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "\tdomain domain.Domain," >> $$RABBITMQ_ADAPTER_DST; \
 		echo ") inbound_port.$${PASCAL}MessagePort {" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\treturn &$${LOWER}Adapter{" >> $$RABBITMQ_ADAPTER_DST; \
+		echo "\treturn &$${CAMEL}Adapter{" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "\t\tdomain: domain," >> $$RABBITMQ_ADAPTER_DST; \
 		echo "\t}" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "}" >> $$RABBITMQ_ADAPTER_DST; \
@@ -306,8 +310,10 @@ inbound-command:
 	fi
 	@LOWER=$$(echo $(VAL) | tr '[:upper:]' '[:lower:]'); \
 	if [[ "$$LOWER" == *_* ]]; then \
+		CAMEL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {$$1=$$1; for(i=2;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 		PASCAL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {for(i=1;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 	else \
+		CAMEL=$$(echo $$LOWER); \
 		PASCAL=$$(echo $$LOWER | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}'); \
 	fi; \
 	DST=internal/port/inbound/$${LOWER}.go; \
@@ -337,14 +343,14 @@ inbound-command:
 		echo "\tinbound_port \"prabogo/internal/port/inbound\"" >> $$COMMAND_ADAPTER_DST; \
 		echo ")" >> $$COMMAND_ADAPTER_DST; \
 		echo "" >> $$COMMAND_ADAPTER_DST; \
-		echo "type $${LOWER}Adapter struct {" >> $$COMMAND_ADAPTER_DST; \
+		echo "type $${CAMEL}Adapter struct {" >> $$COMMAND_ADAPTER_DST; \
 		echo "\tdomain domain.Domain" >> $$COMMAND_ADAPTER_DST; \
 		echo "}" >> $$COMMAND_ADAPTER_DST; \
 		echo "" >> $$COMMAND_ADAPTER_DST; \
 		echo "func New$${PASCAL}Adapter(" >> $$COMMAND_ADAPTER_DST; \
 		echo "\tdomain domain.Domain," >> $$COMMAND_ADAPTER_DST; \
 		echo ") inbound_port.$${PASCAL}CommandPort {" >> $$COMMAND_ADAPTER_DST; \
-		echo "\treturn &$${LOWER}Adapter{" >> $$COMMAND_ADAPTER_DST; \
+		echo "\treturn &$${CAMEL}Adapter{" >> $$COMMAND_ADAPTER_DST; \
 		echo "\t\tdomain: domain," >> $$COMMAND_ADAPTER_DST; \
 		echo "\t}" >> $$COMMAND_ADAPTER_DST; \
 		echo "}" >> $$COMMAND_ADAPTER_DST; \
@@ -378,8 +384,10 @@ outbound-database-postgres:
 	fi
 	@LOWER=$$(echo $(VAL) | tr '[:upper:]' '[:lower:]'); \
 	if [[ "$$LOWER" == *_* ]]; then \
+		CAMEL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {$$1=$$1; for(i=2;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 		PASCAL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {for(i=1;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 	else \
+		CAMEL=$$(echo $$LOWER); \
 		PASCAL=$$(echo $$LOWER | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}'); \
 	fi; \
 	DST=internal/port/outbound/$${LOWER}.go; \
@@ -410,14 +418,14 @@ outbound-database-postgres:
 		echo "" >> $$POSTGRES_ADAPTER_DST; \
 		echo "const table$${PASCAL} = \"$${LOWER}s\"" >> $$POSTGRES_ADAPTER_DST; \
 		echo "" >> $$POSTGRES_ADAPTER_DST; \
-		echo "type $${LOWER}Adapter struct {" >> $$POSTGRES_ADAPTER_DST; \
+		echo "type $${CAMEL}Adapter struct {" >> $$POSTGRES_ADAPTER_DST; \
 		echo "\tdb outbound_port.DatabaseExecutor" >> $$POSTGRES_ADAPTER_DST; \
 		echo "}" >> $$POSTGRES_ADAPTER_DST; \
 		echo "" >> $$POSTGRES_ADAPTER_DST; \
 		echo "func New$${PASCAL}Adapter(" >> $$POSTGRES_ADAPTER_DST; \
 		echo "\tdb outbound_port.DatabaseExecutor," >> $$POSTGRES_ADAPTER_DST; \
 		echo ") outbound_port.$${PASCAL}DatabasePort {" >> $$POSTGRES_ADAPTER_DST; \
-		echo "\treturn &$${LOWER}Adapter{" >> $$POSTGRES_ADAPTER_DST; \
+		echo "\treturn &$${CAMEL}Adapter{" >> $$POSTGRES_ADAPTER_DST; \
 	echo "\t\tdb: db," >> $$POSTGRES_ADAPTER_DST; \
 	echo "\t}" >> $$POSTGRES_ADAPTER_DST; \
 	echo "}" >> $$POSTGRES_ADAPTER_DST; \
@@ -452,8 +460,10 @@ outbound-http:
 	fi
 	@LOWER=$$(echo $(VAL) | tr '[:upper:]' '[:lower:]'); \
 	if [[ "$$LOWER" == *_* ]]; then \
+		CAMEL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {$$1=$$1; for(i=2;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 		PASCAL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {for(i=1;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 	else \
+		CAMEL=$$(echo $$LOWER); \
 		PASCAL=$$(echo $$LOWER | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}'); \
 	fi; \
 	DST=internal/port/outbound/$${LOWER}.go; \
@@ -482,10 +492,10 @@ outbound-http:
 		echo "\toutbound_port \"prabogo/internal/port/outbound\"" >> $$HTTP_ADAPTER_DST; \
 		echo ")" >> $$HTTP_ADAPTER_DST; \
 		echo "" >> $$HTTP_ADAPTER_DST; \
-		echo "type $${LOWER}Adapter struct {}" >> $$HTTP_ADAPTER_DST; \
+		echo "type $${CAMEL}Adapter struct {}" >> $$HTTP_ADAPTER_DST; \
 		echo "" >> $$HTTP_ADAPTER_DST; \
 		echo "func New$${PASCAL}Adapter() outbound_port.$${PASCAL}HttpPort {" >> $$HTTP_ADAPTER_DST; \
-		echo "\treturn &$${LOWER}Adapter{}" >> $$HTTP_ADAPTER_DST; \
+		echo "\treturn &$${CAMEL}Adapter{}" >> $$HTTP_ADAPTER_DST; \
 		echo "}" >> $$HTTP_ADAPTER_DST; \
 		echo "[INFO] Created http adapter file: $$HTTP_ADAPTER_DST"; \
 	fi; \
@@ -519,8 +529,10 @@ outbound-message-rabbitmq:
 	fi
 	@LOWER=$$(echo $(VAL) | tr '[:upper:]' '[:lower:]'); \
 	if [[ "$$LOWER" == *_* ]]; then \
+		CAMEL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {$$1=$$1; for(i=2;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 		PASCAL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {for(i=1;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 	else \
+		CAMEL=$$(echo $$LOWER); \
 		PASCAL=$$(echo $$LOWER | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}'); \
 	fi; \
 	DST=internal/port/outbound/$${LOWER}.go; \
@@ -549,10 +561,10 @@ outbound-message-rabbitmq:
 		echo "\toutbound_port \"prabogo/internal/port/outbound\"" >> $$RABBITMQ_ADAPTER_DST; \
 		echo ")" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "type $${LOWER}Adapter struct {}" >> $$RABBITMQ_ADAPTER_DST; \
+		echo "type $${CAMEL}Adapter struct {}" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "func New$${PASCAL}Adapter() outbound_port.$${PASCAL}MessagePort {" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\treturn &$${LOWER}Adapter{}" >> $$RABBITMQ_ADAPTER_DST; \
+		echo "\treturn &$${CAMEL}Adapter{}" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "}" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "[INFO] Created rabbitmq adapter file: $$RABBITMQ_ADAPTER_DST"; \
 	fi; \
@@ -586,8 +598,10 @@ outbound-cache-redis:
 	fi
 	@LOWER=$$(echo $(VAL) | tr '[:upper:]' '[:lower:]'); \
 	if [[ "$$LOWER" == *_* ]]; then \
+		CAMEL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {$$1=$$1; for(i=2;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 		PASCAL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {for(i=1;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
 	else \
+		CAMEL=$$(echo $$LOWER); \
 		PASCAL=$$(echo $$LOWER | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}'); \
 	fi; \
 	DST=internal/port/outbound/$${LOWER}.go; \
@@ -616,10 +630,10 @@ outbound-cache-redis:
 		echo "\toutbound_port \"prabogo/internal/port/outbound\"" >> $$REDIS_ADAPTER_DST; \
 		echo ")" >> $$REDIS_ADAPTER_DST; \
 		echo "" >> $$REDIS_ADAPTER_DST; \
-		echo "type $${LOWER}Adapter struct {}" >> $$REDIS_ADAPTER_DST; \
+		echo "type $${CAMEL}Adapter struct {}" >> $$REDIS_ADAPTER_DST; \
 		echo "" >> $$REDIS_ADAPTER_DST; \
 		echo "func New$${PASCAL}Adapter() outbound_port.$${PASCAL}CachePort {" >> $$REDIS_ADAPTER_DST; \
-		echo "\treturn &$${LOWER}Adapter{}" >> $$REDIS_ADAPTER_DST; \
+		echo "\treturn &$${CAMEL}Adapter{}" >> $$REDIS_ADAPTER_DST; \
 		echo "}" >> $$REDIS_ADAPTER_DST; \
 		echo "[INFO] Created redis adapter file: $$REDIS_ADAPTER_DST"; \
 	fi; \
