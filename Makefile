@@ -1,7 +1,7 @@
 IMAGE_NAME=$(shell basename $(CURDIR)):latest
 CONTAINER_NAME=$(shell basename $(CURDIR))_app
 
-.PHONY: build http message command model migration-postgres inbound-http inbound-message-rabbitmq inbound-command outbound-database-postgres outbound-http outbound-message-rabbitmq outbound-cache-redis run generate-mocks
+.PHONY: build http message command model domain migration-postgres inbound-http inbound-message-rabbitmq inbound-command outbound-database-postgres outbound-http outbound-message-rabbitmq outbound-cache-redis run generate-mocks
 
 build:
 	@if [ "$(BUILD)" = "true" ]; then \
@@ -98,6 +98,61 @@ model:
 	printf "\treturn false\n" >> $$DST; \
 	printf "}\n" >> $$DST; \
 	echo "[INFO] Created model file: $$DST"
+
+domain:
+	@if [ -z "$(VAL)" ]; then \
+		echo "[ERROR] Please provide VAL, e.g. make domain VAL=product"; \
+		exit 1; \
+	fi; \
+	LOWER=$$(echo $(VAL) | tr '[:upper:]' '[:lower:]'); \
+	if [[ "$$LOWER" == *_* ]]; then \
+		PASCAL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {for(i=1;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
+		CAMEL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_"} {printf "%s", $$1; for(i=2;i<=NF;i++) printf "%s", toupper(substr($$i,1,1)) substr($$i,2)} END{print ""}'); \
+	else \
+		PASCAL=$$(echo $$LOWER | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}'); \
+		CAMEL=$$LOWER; \
+	fi; \
+	DOMAIN_DIR=internal/domain/$$LOWER; \
+	if [ -d "$$DOMAIN_DIR" ]; then \
+		echo "[ERROR] Directory $$DOMAIN_DIR already exists."; \
+		exit 1; \
+	fi; \
+	mkdir -p $$DOMAIN_DIR; \
+	echo "[INFO] Created directory: $$DOMAIN_DIR"; \
+	DOMAIN_FILE=$$DOMAIN_DIR/domain.go; \
+	printf "package $$LOWER\n" >> $$DOMAIN_FILE; \
+	printf "\n" >> $$DOMAIN_FILE; \
+	printf "type $${PASCAL}Domain interface{}\n" >> $$DOMAIN_FILE; \
+	printf "\n" >> $$DOMAIN_FILE; \
+	printf "type $${CAMEL}Domain struct{}\n" >> $$DOMAIN_FILE; \
+	printf "\n" >> $$DOMAIN_FILE; \
+	printf "func New$${PASCAL}Domain() $${PASCAL}Domain {\n" >> $$DOMAIN_FILE; \
+	printf "\treturn &$${CAMEL}Domain{}\n" >> $$DOMAIN_FILE; \
+	printf "}\n" >> $$DOMAIN_FILE; \
+	echo "[INFO] Created domain file: $$DOMAIN_FILE"; \
+	REGISTRY_FILE=internal/domain/registry.go; \
+	if grep -q "\"prabogo/internal/domain/$$LOWER\"" "$$REGISTRY_FILE"; then \
+		echo "[INFO] Import for $$LOWER already exists in $$REGISTRY_FILE"; \
+	else \
+		awk '/^import \($$/{print;print "\t\"prabogo/internal/domain/'"$$LOWER"'\"";next}1' "$$REGISTRY_FILE" > "$$REGISTRY_FILE.tmp" && mv "$$REGISTRY_FILE.tmp" "$$REGISTRY_FILE"; \
+		echo "[INFO] Added import for $$LOWER to $$REGISTRY_FILE"; \
+	fi; \
+	if grep -q "$${PASCAL}() $${LOWER}.$${PASCAL}Domain" "$$REGISTRY_FILE"; then \
+		echo "[INFO] Interface method $${PASCAL}() already exists in $$REGISTRY_FILE"; \
+	else \
+		awk '/^type Domain interface \{$$/{print;print "\t'"$${PASCAL}"'() '"$${LOWER}"'.'"$${PASCAL}"'Domain";next}1' "$$REGISTRY_FILE" > "$$REGISTRY_FILE.tmp" && mv "$$REGISTRY_FILE.tmp" "$$REGISTRY_FILE"; \
+		echo "[INFO] Added $${PASCAL}() method to Domain interface in $$REGISTRY_FILE"; \
+	fi; \
+	if grep -q "func (d \*domain) $${PASCAL}()" "$$REGISTRY_FILE"; then \
+		echo "[INFO] Function $${PASCAL}() already exists in $$REGISTRY_FILE"; \
+	else \
+		printf "\n" >> $$REGISTRY_FILE; \
+		printf "func (d *domain) $${PASCAL}() $${LOWER}.$${PASCAL}Domain {\n" >> $$REGISTRY_FILE; \
+		printf "\treturn $${LOWER}.New$${PASCAL}Domain()\n" >> $$REGISTRY_FILE; \
+		printf "}\n" >> $$REGISTRY_FILE; \
+		echo "[INFO] Added $${PASCAL}() function to $$REGISTRY_FILE"; \
+	fi; \
+	echo "[INFO] Domain generation completed successfully!"
 
 migration-postgres:
 	@if [ -z "$(VAL)" ]; then \
@@ -683,7 +738,7 @@ run:
 	if [ -n "$$target" ]; then \
 		echo "[INFO] Selected target: $$target"; \
 		case "$$target" in \
-			"model"|"migration-postgres"|"inbound-http-fiber"|"inbound-message-rabbitmq"|"inbound-command"|"outbound-database-postgres"|"outbound-http"|"outbound-message-rabbitmq"|"outbound-cache-redis") \
+			"model"|"domain"|"migration-postgres"|"inbound-http-fiber"|"inbound-message-rabbitmq"|"inbound-command"|"outbound-database-postgres"|"outbound-http"|"outbound-message-rabbitmq"|"outbound-cache-redis") \
 				printf "Enter VAL parameter: "; \
 				val=$$(bash -c 'read -r val && echo "$$val"'); \
 				if [ -n "$$val" ]; then \
