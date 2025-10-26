@@ -66,37 +66,37 @@ model:
 		echo "[ERROR] File $$DST already exists."; \
 		exit 1; \
 	fi; \
-	echo "package model" >> $$DST; \
-	echo "" >> $$DST; \
-	echo "import (" >> $$DST; \
-	echo "\t\"time\"" >> $$DST; \
-	echo ")" >> $$DST; \
-	echo "" >> $$DST; \
-	echo "type $$UPPER struct {" >> $$DST; \
-	echo "\tID int \`json:\"id\" db:\"id\"\`" >> $$DST; \
-	echo "\t$${UPPER}Input" >> $$DST; \
-	echo "}" >> $$DST; \
-	echo "" >> $$DST; \
-	echo "type $${UPPER}Input struct {" >> $$DST; \
-	echo "\tCreatedAt time.Time \`json:\"created_at\" db:\"created_at\"\`" >> $$DST; \
-	echo "\tUpdatedAt time.Time \`json:\"updated_at\" db:\"updated_at\"\`" >> $$DST; \
-	echo "}" >> $$DST; \
-	echo "" >> $$DST; \
-	echo "type $${UPPER}Filter struct {" >> $$DST; \
-	echo "\tIDs []int \`json:\"ids\"\`" >> $$DST; \
-	echo "}" >> $$DST; \
-	echo "" >> $$DST; \
-	echo "func $${UPPER}Prepare(v *$${UPPER}Input) {" >> $$DST; \
-	echo "\tv.CreatedAt = time.Now()" >> $$DST; \
-	echo "\tv.UpdatedAt = time.Now()" >> $$DST; \
-	echo "}" >> $$DST; \
-	echo "" >> $$DST; \
-	echo "func (c $${UPPER}Filter) IsEmpty() bool {" >> $$DST; \
-	echo "\tif len(c.IDs) == 0 {" >> $$DST; \
-	echo "\t\treturn true" >> $$DST; \
-	echo "\t}" >> $$DST; \
-	echo "\treturn false" >> $$DST; \
-	echo "}" >> $$DST; \
+	printf "package model\n" >> $$DST; \
+	printf "\n" >> $$DST; \
+	printf "import (\n" >> $$DST; \
+	printf "\t\"time\"\n" >> $$DST; \
+	printf ")\n" >> $$DST; \
+	printf "\n" >> $$DST; \
+	printf "type $$UPPER struct {\n" >> $$DST; \
+	printf "\tID int \`json:\"id\" db:\"id\"\`\n" >> $$DST; \
+	printf "\t$${UPPER}Input\n" >> $$DST; \
+	printf "}\n" >> $$DST; \
+	printf "\n" >> $$DST; \
+	printf "type $${UPPER}Input struct {\n" >> $$DST; \
+	printf "\tCreatedAt time.Time \`json:\"created_at\" db:\"created_at\"\`\n" >> $$DST; \
+	printf "\tUpdatedAt time.Time \`json:\"updated_at\" db:\"updated_at\"\`\n" >> $$DST; \
+	printf "}\n" >> $$DST; \
+	printf "\n" >> $$DST; \
+	printf "type $${UPPER}Filter struct {\n" >> $$DST; \
+	printf "\tIDs []int \`json:\"ids\"\`\n" >> $$DST; \
+	printf "}\n" >> $$DST; \
+	printf "\n" >> $$DST; \
+	printf "func $${UPPER}Prepare(v *$${UPPER}Input) {\n" >> $$DST; \
+	printf "\tv.CreatedAt = time.Now()\n" >> $$DST; \
+	printf "\tv.UpdatedAt = time.Now()\n" >> $$DST; \
+	printf "}\n" >> $$DST; \
+	printf "\n" >> $$DST; \
+	printf "func (c $${UPPER}Filter) IsEmpty() bool {\n" >> $$DST; \
+	printf "\tif len(c.IDs) == 0 {\n" >> $$DST; \
+	printf "\t\treturn true\n" >> $$DST; \
+	printf "\t}\n" >> $$DST; \
+	printf "\treturn false\n" >> $$DST; \
+	printf "}\n" >> $$DST; \
 	echo "[INFO] Created model file: $$DST"
 
 migration-postgres:
@@ -120,40 +120,40 @@ migration-postgres:
 		echo "[ERROR] File $$DST already exists."; \
 		exit 1; \
 	fi; \
-	echo "package migrations" >> $$DST; \
-	echo "" >> $$DST; \
-	echo "import (" >> $$DST; \
-	echo "\t\"context\"" >> $$DST; \
-	echo "\t\"database/sql\"" >> $$DST; \
-	echo "" >> $$DST; \
-	echo "\t\"github.com/pressly/goose/v3\"" >> $$DST; \
-	echo ")" >> $$DST; \
-	echo "" >> $$DST; \
-	echo "func init() {" >> $$DST; \
-	echo "\tgoose.AddMigrationContext(up$${PASCAL}, down$${PASCAL})" >> $$DST; \
-	echo "}" >> $$DST; \
-	echo "" >> $$DST; \
-	echo "func up$${PASCAL}(ctx context.Context, tx *sql.Tx) error {" >> $$DST; \
-	echo "\t// This code is executed when the migration is applied." >> $$DST; \
-	echo "\t_, err := tx.Exec(\`CREATE TABLE IF NOT EXISTS $${LOWER}s (" >> $$DST; \
-	echo "\t\tid SERIAL PRIMARY KEY," >> $$DST; \
-	echo "\t\tcreated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL," >> $$DST; \
-	echo "\t\tupdated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL" >> $$DST; \
-	echo "\t);\`)" >> $$DST; \
-	echo "\tif err != nil {" >> $$DST; \
-	echo "\t\treturn err" >> $$DST; \
-	echo "\t}" >> $$DST; \
-	echo "\treturn nil" >> $$DST; \
-	echo "}" >> $$DST; \
-	echo "" >> $$DST; \
-	echo "func down$${PASCAL}(ctx context.Context, tx *sql.Tx) error {" >> $$DST; \
-	echo "\t// This code is executed when the migration is rolled back." >> $$DST; \
-	echo "\t_, err := tx.Exec(\`DROP TABLE $${LOWER}s;\`)" >> $$DST; \
-	echo "\tif err != nil {" >> $$DST; \
-	echo "\t\treturn err" >> $$DST; \
-	echo "\t}" >> $$DST; \
-	echo "\treturn nil" >> $$DST; \
-	echo "}" >> $$DST; \
+	printf "package migrations\n" >> $$DST; \
+	printf "\n" >> $$DST; \
+	printf "import (\n" >> $$DST; \
+	printf "\t\"context\"\n" >> $$DST; \
+	printf "\t\"database/sql\"\n" >> $$DST; \
+	printf "\n" >> $$DST; \
+	printf "\t\"github.com/pressly/goose/v3\"\n" >> $$DST; \
+	printf ")\n" >> $$DST; \
+	printf "\n" >> $$DST; \
+	printf "func init() {\n" >> $$DST; \
+	printf "\tgoose.AddMigrationContext(up$${PASCAL}, down$${PASCAL})\n" >> $$DST; \
+	printf "}\n" >> $$DST; \
+	printf "\n" >> $$DST; \
+	printf "func up$${PASCAL}(ctx context.Context, tx *sql.Tx) error {\n" >> $$DST; \
+	printf "\t// This code is executed when the migration is applied.\n" >> $$DST; \
+	printf "\t_, err := tx.Exec(\`CREATE TABLE IF NOT EXISTS $${LOWER}s (\n" >> $$DST; \
+	printf "\t\tid SERIAL PRIMARY KEY,\n" >> $$DST; \
+	printf "\t\tcreated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n" >> $$DST; \
+	printf "\t\tupdated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n" >> $$DST; \
+	printf "\t);\`)\n" >> $$DST; \
+	printf "\tif err != nil {\n" >> $$DST; \
+	printf "\t\treturn err\n" >> $$DST; \
+	printf "\t}\n" >> $$DST; \
+	printf "\treturn nil\n" >> $$DST; \
+	printf "}\n" >> $$DST; \
+	printf "\n" >> $$DST; \
+	printf "func down$${PASCAL}(ctx context.Context, tx *sql.Tx) error {\n" >> $$DST; \
+	printf "\t// This code is executed when the migration is rolled back.\n" >> $$DST; \
+	printf "\t_, err := tx.Exec(\`DROP TABLE $${LOWER}s;\`)\n" >> $$DST; \
+	printf "\tif err != nil {\n" >> $$DST; \
+	printf "\t\treturn err\n" >> $$DST; \
+	printf "\t}\n" >> $$DST; \
+	printf "\treturn nil\n" >> $$DST; \
+	printf "}\n" >> $$DST; \
 	echo "[INFO] Created migration file: $$DST"
 
 inbound-http-fiber:
@@ -173,40 +173,40 @@ inbound-http-fiber:
 	if [ -f "$$DST" ]; then \
 		echo "[INFO] File $$DST already exists."; \
 		if ! grep -q "$${PASCAL}HttpPort" "$$DST"; then \
-			echo "" >> $$DST; \
-			echo "type $${PASCAL}HttpPort interface {}" >> $$DST; \
+			printf "\n" >> $$DST; \
+			printf "type $${PASCAL}HttpPort interface {}\n" >> $$DST; \
 			echo "[INFO] Added $${PASCAL}HttpPort interface to $$DST"; \
     else \
       echo "[INFO] $${PASCAL}HttpPort interface already exists in $$DST"; \
 		fi; \
 	else \
-		echo "package inbound_port" >> $$DST; \
-		echo "" >> $$DST; \
-		echo "type $${PASCAL}HttpPort interface {}" >> $$DST; \
+		printf "package inbound_port\n" >> $$DST; \
+		printf "\n" >> $$DST; \
+		printf "type $${PASCAL}HttpPort interface {}\n" >> $$DST; \
 		echo "[INFO] Created port interface file: $$DST with HTTP interface"; \
 	fi; \
 	FIBER_ADAPTER_DST=internal/adapter/inbound/fiber/$${LOWER}.go; \
 	if [ -f "$$FIBER_ADAPTER_DST" ]; then \
 		echo "[INFO] Fiber adapter file $$FIBER_ADAPTER_DST already exists."; \
 	else \
-		echo "package fiber_inbound_adapter" >> $$FIBER_ADAPTER_DST; \
-		echo "" >> $$FIBER_ADAPTER_DST; \
-		echo "import (" >> $$FIBER_ADAPTER_DST; \
-		echo "\t\"prabogo/internal/domain\"" >> $$FIBER_ADAPTER_DST; \
-		echo "\tinbound_port \"prabogo/internal/port/inbound\"" >> $$FIBER_ADAPTER_DST; \
-		echo ")" >> $$FIBER_ADAPTER_DST; \
-		echo "" >> $$FIBER_ADAPTER_DST; \
-		echo "type $${CAMEL}Adapter struct {" >> $$FIBER_ADAPTER_DST; \
-		echo "\tdomain domain.Domain" >> $$FIBER_ADAPTER_DST; \
-		echo "}" >> $$FIBER_ADAPTER_DST; \
-		echo "" >> $$FIBER_ADAPTER_DST; \
-		echo "func New$${PASCAL}Adapter(" >> $$FIBER_ADAPTER_DST; \
-		echo "\tdomain domain.Domain," >> $$FIBER_ADAPTER_DST; \
-		echo ") inbound_port.$${PASCAL}HttpPort {" >> $$FIBER_ADAPTER_DST; \
-		echo "\treturn &$${CAMEL}Adapter{" >> $$FIBER_ADAPTER_DST; \
-		echo "\t\tdomain: domain," >> $$FIBER_ADAPTER_DST; \
-		echo "\t}" >> $$FIBER_ADAPTER_DST; \
-		echo "}" >> $$FIBER_ADAPTER_DST; \
+		printf "package fiber_inbound_adapter\n" >> $$FIBER_ADAPTER_DST; \
+		printf "\n" >> $$FIBER_ADAPTER_DST; \
+		printf "import (\n" >> $$FIBER_ADAPTER_DST; \
+		printf "\t\"prabogo/internal/domain\"\n" >> $$FIBER_ADAPTER_DST; \
+		printf "\tinbound_port \"prabogo/internal/port/inbound\"\n" >> $$FIBER_ADAPTER_DST; \
+		printf ")\n" >> $$FIBER_ADAPTER_DST; \
+		printf "\n" >> $$FIBER_ADAPTER_DST; \
+		printf "type $${CAMEL}Adapter struct {\n" >> $$FIBER_ADAPTER_DST; \
+		printf "\tdomain domain.Domain\n" >> $$FIBER_ADAPTER_DST; \
+		printf "}\n" >> $$FIBER_ADAPTER_DST; \
+		printf "\n" >> $$FIBER_ADAPTER_DST; \
+		printf "func New$${PASCAL}Adapter(\n" >> $$FIBER_ADAPTER_DST; \
+		printf "\tdomain domain.Domain,\n" >> $$FIBER_ADAPTER_DST; \
+		printf ") inbound_port.$${PASCAL}HttpPort {\n" >> $$FIBER_ADAPTER_DST; \
+		printf "\treturn &$${CAMEL}Adapter{\n" >> $$FIBER_ADAPTER_DST; \
+		printf "\t\tdomain: domain,\n" >> $$FIBER_ADAPTER_DST; \
+		printf "\t}\n" >> $$FIBER_ADAPTER_DST; \
+		printf "}\n" >> $$FIBER_ADAPTER_DST; \
 		echo "[INFO] Created fiber adapter file: $$FIBER_ADAPTER_DST"; \
 	fi; \
 	REGISTRY_FILE=internal/adapter/inbound/fiber/registry.go; \
@@ -246,40 +246,40 @@ inbound-message-rabbitmq:
 	if [ -f "$$DST" ]; then \
 		echo "[INFO] File $$DST already exists."; \
 		if ! grep -q "$${PASCAL}MessagePort" "$$DST"; then \
-			echo "" >> $$DST; \
-			echo "type $${PASCAL}MessagePort interface {}" >> $$DST; \
+			printf "\n" >> $$DST; \
+			printf "type $${PASCAL}MessagePort interface {}\n" >> $$DST; \
 			echo "[INFO] Added $${PASCAL}MessagePort interface to $$DST"; \
 		else \
 			echo "[INFO] $${PASCAL}MessagePort interface already exists in $$DST"; \
 		fi; \
 	else \
-		echo "package inbound_port" >> $$DST; \
-		echo "" >> $$DST; \
-		echo "type $${PASCAL}MessagePort interface {}" >> $$DST; \
+		printf "package inbound_port\n" >> $$DST; \
+		printf "\n" >> $$DST; \
+		printf "type $${PASCAL}MessagePort interface {}\n" >> $$DST; \
 		echo "[INFO] Created port interface file: $$DST with Message interface"; \
 	fi; \
 	RABBITMQ_ADAPTER_DST=internal/adapter/inbound/rabbitmq/$${LOWER}.go; \
 	if [ -f "$$RABBITMQ_ADAPTER_DST" ]; then \
 		echo "[INFO] RabbitMQ adapter file $$RABBITMQ_ADAPTER_DST already exists."; \
 	else \
-		echo "package rabbitmq_inbound_adapter" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "import (" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\t\"prabogo/internal/domain\"" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\tinbound_port \"prabogo/internal/port/inbound\"" >> $$RABBITMQ_ADAPTER_DST; \
-		echo ")" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "type $${CAMEL}Adapter struct {" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\tdomain domain.Domain" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "}" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "func New$${PASCAL}Adapter(" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\tdomain domain.Domain," >> $$RABBITMQ_ADAPTER_DST; \
-		echo ") inbound_port.$${PASCAL}MessagePort {" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\treturn &$${CAMEL}Adapter{" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\t\tdomain: domain," >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\t}" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "}" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "package rabbitmq_inbound_adapter\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "import (\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\t\"prabogo/internal/domain\"\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\tinbound_port \"prabogo/internal/port/inbound\"\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf ")\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "type $${CAMEL}Adapter struct {\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\tdomain domain.Domain\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "}\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "func New$${PASCAL}Adapter(\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\tdomain domain.Domain,\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf ") inbound_port.$${PASCAL}MessagePort {\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\treturn &$${CAMEL}Adapter{\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\t\tdomain: domain,\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\t}\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "}\n" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "[INFO] Created RabbitMQ adapter file: $$RABBITMQ_ADAPTER_DST"; \
 	fi; \
 	REGISTRY_FILE=internal/adapter/inbound/rabbitmq/registry.go; \
@@ -320,40 +320,40 @@ inbound-command:
 	if [ -f "$$DST" ]; then \
 		echo "[INFO] File $$DST already exists."; \
 		if ! grep -q "$${PASCAL}CommandPort" "$$DST"; then \
-			echo "" >> $$DST; \
-			echo "type $${PASCAL}CommandPort interface {}" >> $$DST; \
+			printf "\n" >> $$DST; \
+			printf "type $${PASCAL}CommandPort interface {}\n" >> $$DST; \
 			echo "[INFO] Added $${PASCAL}CommandPort interface to $$DST"; \
 		else \
 			echo "[INFO] $${PASCAL}CommandPort interface already exists in $$DST"; \
 		fi; \
 	else \
-		echo "package inbound_port" >> $$DST; \
-		echo "" >> $$DST; \
-		echo "type $${PASCAL}CommandPort interface {}" >> $$DST; \
+		printf "package inbound_port\n" >> $$DST; \
+		printf "\n" >> $$DST; \
+		printf "type $${PASCAL}CommandPort interface {}\n" >> $$DST; \
 		echo "[INFO] Created port interface file: $$DST with Command interface"; \
 	fi; \
 	COMMAND_ADAPTER_DST=internal/adapter/inbound/command/$${LOWER}.go; \
 	if [ -f "$$COMMAND_ADAPTER_DST" ]; then \
 		echo "[INFO] Command adapter file $$COMMAND_ADAPTER_DST already exists."; \
 	else \
-		echo "package command_inbound_adapter" >> $$COMMAND_ADAPTER_DST; \
-		echo "" >> $$COMMAND_ADAPTER_DST; \
-		echo "import (" >> $$COMMAND_ADAPTER_DST; \
-		echo "\t\"prabogo/internal/domain\"" >> $$COMMAND_ADAPTER_DST; \
-		echo "\tinbound_port \"prabogo/internal/port/inbound\"" >> $$COMMAND_ADAPTER_DST; \
-		echo ")" >> $$COMMAND_ADAPTER_DST; \
-		echo "" >> $$COMMAND_ADAPTER_DST; \
-		echo "type $${CAMEL}Adapter struct {" >> $$COMMAND_ADAPTER_DST; \
-		echo "\tdomain domain.Domain" >> $$COMMAND_ADAPTER_DST; \
-		echo "}" >> $$COMMAND_ADAPTER_DST; \
-		echo "" >> $$COMMAND_ADAPTER_DST; \
-		echo "func New$${PASCAL}Adapter(" >> $$COMMAND_ADAPTER_DST; \
-		echo "\tdomain domain.Domain," >> $$COMMAND_ADAPTER_DST; \
-		echo ") inbound_port.$${PASCAL}CommandPort {" >> $$COMMAND_ADAPTER_DST; \
-		echo "\treturn &$${CAMEL}Adapter{" >> $$COMMAND_ADAPTER_DST; \
-		echo "\t\tdomain: domain," >> $$COMMAND_ADAPTER_DST; \
-		echo "\t}" >> $$COMMAND_ADAPTER_DST; \
-		echo "}" >> $$COMMAND_ADAPTER_DST; \
+		printf "package command_inbound_adapter\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "import (\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "\t\"prabogo/internal/domain\"\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "\tinbound_port \"prabogo/internal/port/inbound\"\n" >> $$COMMAND_ADAPTER_DST; \
+		printf ")\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "type $${CAMEL}Adapter struct {\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "\tdomain domain.Domain\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "}\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "func New$${PASCAL}Adapter(\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "\tdomain domain.Domain,\n" >> $$COMMAND_ADAPTER_DST; \
+		printf ") inbound_port.$${PASCAL}CommandPort {\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "\treturn &$${CAMEL}Adapter{\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "\t\tdomain: domain,\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "\t}\n" >> $$COMMAND_ADAPTER_DST; \
+		printf "}\n" >> $$COMMAND_ADAPTER_DST; \
 		echo "[INFO] Created Command adapter file: $$COMMAND_ADAPTER_DST"; \
 	fi; \
 	REGISTRY_FILE=internal/adapter/inbound/command/registry.go; \
@@ -394,41 +394,41 @@ outbound-database-postgres:
 	if [ -f "$$DST" ]; then \
 		echo "[INFO] File $$DST already exists."; \
 		if ! grep -q "$${PASCAL}DatabasePort" "$$DST"; then \
-			echo "" >> $$DST; \
-			echo "type $${PASCAL}DatabasePort interface {}" >> $$DST; \
+			printf "\n" >> $$DST; \
+			printf "type $${PASCAL}DatabasePort interface {}\n" >> $$DST; \
 			echo "[INFO] Added $${PASCAL}DatabasePort interface to $$DST"; \
 	else \
 	  echo "[INFO] $${PASCAL}DatabasePort interface already exists in $$DST"; \
 		fi; \
 	else \
-		echo "package outbound_port" >> $$DST; \
-		echo "" >> $$DST; \
-		echo "type $${PASCAL}DatabasePort interface {}" >> $$DST; \
+		printf "package outbound_port\n" >> $$DST; \
+		printf "\n" >> $$DST; \
+		printf "type $${PASCAL}DatabasePort interface {}\n" >> $$DST; \
 		echo "[INFO] Created port interface file: $$DST with Database interface"; \
 	fi; \
 	POSTGRES_ADAPTER_DST=internal/adapter/outbound/postgres/$${LOWER}.go; \
 	if [ -f "$$POSTGRES_ADAPTER_DST" ]; then \
 		echo "[INFO] Postgres adapter file $$POSTGRES_ADAPTER_DST already exists."; \
 	else \
-		echo "package postgres_outbound_adapter" >> $$POSTGRES_ADAPTER_DST; \
-		echo "" >> $$POSTGRES_ADAPTER_DST; \
-		echo "import (" >> $$POSTGRES_ADAPTER_DST; \
-		echo "\toutbound_port \"prabogo/internal/port/outbound\"" >> $$POSTGRES_ADAPTER_DST; \
-		echo ")" >> $$POSTGRES_ADAPTER_DST; \
-		echo "" >> $$POSTGRES_ADAPTER_DST; \
-		echo "const table$${PASCAL} = \"$${LOWER}s\"" >> $$POSTGRES_ADAPTER_DST; \
-		echo "" >> $$POSTGRES_ADAPTER_DST; \
-		echo "type $${CAMEL}Adapter struct {" >> $$POSTGRES_ADAPTER_DST; \
-		echo "\tdb outbound_port.DatabaseExecutor" >> $$POSTGRES_ADAPTER_DST; \
-		echo "}" >> $$POSTGRES_ADAPTER_DST; \
-		echo "" >> $$POSTGRES_ADAPTER_DST; \
-		echo "func New$${PASCAL}Adapter(" >> $$POSTGRES_ADAPTER_DST; \
-		echo "\tdb outbound_port.DatabaseExecutor," >> $$POSTGRES_ADAPTER_DST; \
-		echo ") outbound_port.$${PASCAL}DatabasePort {" >> $$POSTGRES_ADAPTER_DST; \
-		echo "\treturn &$${CAMEL}Adapter{" >> $$POSTGRES_ADAPTER_DST; \
-	echo "\t\tdb: db," >> $$POSTGRES_ADAPTER_DST; \
-	echo "\t}" >> $$POSTGRES_ADAPTER_DST; \
-	echo "}" >> $$POSTGRES_ADAPTER_DST; \
+		printf "package postgres_outbound_adapter\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf "\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf "import (\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf "\toutbound_port \"prabogo/internal/port/outbound\"\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf ")\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf "\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf "const table$${PASCAL} = \"$${LOWER}s\"\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf "\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf "type $${CAMEL}Adapter struct {\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf "\tdb outbound_port.DatabaseExecutor\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf "}\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf "\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf "func New$${PASCAL}Adapter(\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf "\tdb outbound_port.DatabaseExecutor,\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf ") outbound_port.$${PASCAL}DatabasePort {\n" >> $$POSTGRES_ADAPTER_DST; \
+		printf "\treturn &$${CAMEL}Adapter{\n" >> $$POSTGRES_ADAPTER_DST; \
+	printf "\t\tdb: db,\n" >> $$POSTGRES_ADAPTER_DST; \
+	printf "\t}\n" >> $$POSTGRES_ADAPTER_DST; \
+	printf "}\n" >> $$POSTGRES_ADAPTER_DST; \
 	echo "[INFO] Created postgres adapter file: $$POSTGRES_ADAPTER_DST"; \
 	fi; \
 	REGISTRY_FILE=internal/adapter/outbound/postgres/registry.go; \
@@ -470,33 +470,33 @@ outbound-http:
 	if [ -f "$$DST" ]; then \
 		echo "[INFO] File $$DST already exists."; \
 		if ! grep -q "$${PASCAL}HttpPort" "$$DST"; then \
-			echo "" >> $$DST; \
-			echo "type $${PASCAL}HttpPort interface {}" >> $$DST; \
+			printf "\n" >> $$DST; \
+			printf "type $${PASCAL}HttpPort interface {}\n" >> $$DST; \
 			echo "[INFO] Added $${PASCAL}HttpPort interface to $$DST"; \
 	else \
 	  echo "[INFO] $${PASCAL}HttpPort interface already exists in $$DST"; \
 		fi; \
 	else \
-		echo "package outbound_port" >> $$DST; \
-		echo "" >> $$DST; \
-		echo "type $${PASCAL}HttpPort interface {}" >> $$DST; \
+		printf "package outbound_port\n" >> $$DST; \
+		printf "\n" >> $$DST; \
+		printf "type $${PASCAL}HttpPort interface {}\n" >> $$DST; \
 		echo "[INFO] Created port interface file: $$DST with HTTP interface"; \
 	fi; \
 	HTTP_ADAPTER_DST=internal/adapter/outbound/http/$${LOWER}.go; \
 	if [ -f "$$HTTP_ADAPTER_DST" ]; then \
 		echo "[INFO] HTTP adapter file $$HTTP_ADAPTER_DST already exists."; \
 	else \
-		echo "package http_outbound_adapter" >> $$HTTP_ADAPTER_DST; \
-		echo "" >> $$HTTP_ADAPTER_DST; \
-		echo "import (" >> $$HTTP_ADAPTER_DST; \
-		echo "\toutbound_port \"prabogo/internal/port/outbound\"" >> $$HTTP_ADAPTER_DST; \
-		echo ")" >> $$HTTP_ADAPTER_DST; \
-		echo "" >> $$HTTP_ADAPTER_DST; \
-		echo "type $${CAMEL}Adapter struct {}" >> $$HTTP_ADAPTER_DST; \
-		echo "" >> $$HTTP_ADAPTER_DST; \
-		echo "func New$${PASCAL}Adapter() outbound_port.$${PASCAL}HttpPort {" >> $$HTTP_ADAPTER_DST; \
-		echo "\treturn &$${CAMEL}Adapter{}" >> $$HTTP_ADAPTER_DST; \
-		echo "}" >> $$HTTP_ADAPTER_DST; \
+		printf "package http_outbound_adapter\n" >> $$HTTP_ADAPTER_DST; \
+		printf "\n" >> $$HTTP_ADAPTER_DST; \
+		printf "import (\n" >> $$HTTP_ADAPTER_DST; \
+		printf "\toutbound_port \"prabogo/internal/port/outbound\"\n" >> $$HTTP_ADAPTER_DST; \
+		printf ")\n" >> $$HTTP_ADAPTER_DST; \
+		printf "\n" >> $$HTTP_ADAPTER_DST; \
+		printf "type $${CAMEL}Adapter struct {}\n" >> $$HTTP_ADAPTER_DST; \
+		printf "\n" >> $$HTTP_ADAPTER_DST; \
+		printf "func New$${PASCAL}Adapter() outbound_port.$${PASCAL}HttpPort {\n" >> $$HTTP_ADAPTER_DST; \
+		printf "\treturn &$${CAMEL}Adapter{}\n" >> $$HTTP_ADAPTER_DST; \
+		printf "}\n" >> $$HTTP_ADAPTER_DST; \
 		echo "[INFO] Created http adapter file: $$HTTP_ADAPTER_DST"; \
 	fi; \
 	REGISTRY_FILE=internal/adapter/outbound/http/registry.go; \
@@ -539,33 +539,33 @@ outbound-message-rabbitmq:
 	if [ -f "$$DST" ]; then \
 		echo "[INFO] File $$DST already exists."; \
 		if ! grep -q "$${PASCAL}MessagePort" "$$DST"; then \
-			echo "" >> $$DST; \
-			echo "type $${PASCAL}MessagePort interface {}" >> $$DST; \
+			printf "\n" >> $$DST; \
+			printf "type $${PASCAL}MessagePort interface {}\n" >> $$DST; \
 			echo "[INFO] Added $${PASCAL}MessagePort interface to $$DST"; \
 		else \
 			echo "[INFO] $${PASCAL}MessagePort interface already exists in $$DST"; \
 		fi; \
 	else \
-		echo "package outbound_port" >> $$DST; \
-		echo "" >> $$DST; \
-		echo "type $${PASCAL}MessagePort interface {}" >> $$DST; \
+		printf "package outbound_port\n" >> $$DST; \
+		printf "\n" >> $$DST; \
+		printf "type $${PASCAL}MessagePort interface {}\n" >> $$DST; \
 		echo "[INFO] Created port interface file: $$DST with Message interface"; \
 	fi; \
 	RABBITMQ_ADAPTER_DST=internal/adapter/outbound/rabbitmq/$${LOWER}.go; \
 	if [ -f "$$RABBITMQ_ADAPTER_DST" ]; then \
 		echo "[INFO] RabbitMQ adapter file $$RABBITMQ_ADAPTER_DST already exists."; \
 	else \
-		echo "package rabbitmq_outbound_adapter" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "import (" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\toutbound_port \"prabogo/internal/port/outbound\"" >> $$RABBITMQ_ADAPTER_DST; \
-		echo ")" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "type $${CAMEL}Adapter struct {}" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "func New$${PASCAL}Adapter() outbound_port.$${PASCAL}MessagePort {" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "\treturn &$${CAMEL}Adapter{}" >> $$RABBITMQ_ADAPTER_DST; \
-		echo "}" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "package rabbitmq_outbound_adapter\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "import (\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\toutbound_port \"prabogo/internal/port/outbound\"\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf ")\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "type $${CAMEL}Adapter struct {}\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "func New$${PASCAL}Adapter() outbound_port.$${PASCAL}MessagePort {\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "\treturn &$${CAMEL}Adapter{}\n" >> $$RABBITMQ_ADAPTER_DST; \
+		printf "}\n" >> $$RABBITMQ_ADAPTER_DST; \
 		echo "[INFO] Created rabbitmq adapter file: $$RABBITMQ_ADAPTER_DST"; \
 	fi; \
 	REGISTRY_FILE=internal/adapter/outbound/rabbitmq/registry.go; \
@@ -608,33 +608,33 @@ outbound-cache-redis:
 	if [ -f "$$DST" ]; then \
 		echo "[INFO] File $$DST already exists."; \
 		if ! grep -q "$${PASCAL}CachePort" "$$DST"; then \
-			echo "" >> $$DST; \
-			echo "type $${PASCAL}CachePort interface {}" >> $$DST; \
+			printf "\n" >> $$DST; \
+			printf "type $${PASCAL}CachePort interface {}\n" >> $$DST; \
 			echo "[INFO] Added $${PASCAL}CachePort interface to $$DST"; \
 		else \
 			echo "[INFO] $${PASCAL}CachePort interface already exists in $$DST"; \
 		fi; \
 	else \
-		echo "package outbound_port" >> $$DST; \
-		echo "" >> $$DST; \
-		echo "type $${PASCAL}CachePort interface {}" >> $$DST; \
+		printf "package outbound_port\n" >> $$DST; \
+		printf "\n" >> $$DST; \
+		printf "type $${PASCAL}CachePort interface {}\n" >> $$DST; \
 		echo "[INFO] Created port interface file: $$DST with Cache interface"; \
 	fi; \
 	REDIS_ADAPTER_DST=internal/adapter/outbound/redis/$${LOWER}.go; \
 	if [ -f "$$REDIS_ADAPTER_DST" ]; then \
 		echo "[INFO] Redis adapter file $$REDIS_ADAPTER_DST already exists."; \
 	else \
-		echo "package redis_outbound_adapter" >> $$REDIS_ADAPTER_DST; \
-		echo "" >> $$REDIS_ADAPTER_DST; \
-		echo "import (" >> $$REDIS_ADAPTER_DST; \
-		echo "\toutbound_port \"prabogo/internal/port/outbound\"" >> $$REDIS_ADAPTER_DST; \
-		echo ")" >> $$REDIS_ADAPTER_DST; \
-		echo "" >> $$REDIS_ADAPTER_DST; \
-		echo "type $${CAMEL}Adapter struct {}" >> $$REDIS_ADAPTER_DST; \
-		echo "" >> $$REDIS_ADAPTER_DST; \
-		echo "func New$${PASCAL}Adapter() outbound_port.$${PASCAL}CachePort {" >> $$REDIS_ADAPTER_DST; \
-		echo "\treturn &$${CAMEL}Adapter{}" >> $$REDIS_ADAPTER_DST; \
-		echo "}" >> $$REDIS_ADAPTER_DST; \
+		printf "package redis_outbound_adapter\n" >> $$REDIS_ADAPTER_DST; \
+		printf "\n" >> $$REDIS_ADAPTER_DST; \
+		printf "import (\n" >> $$REDIS_ADAPTER_DST; \
+		printf "\toutbound_port \"prabogo/internal/port/outbound\"\n" >> $$REDIS_ADAPTER_DST; \
+		printf ")\n" >> $$REDIS_ADAPTER_DST; \
+		printf "\n" >> $$REDIS_ADAPTER_DST; \
+		printf "type $${CAMEL}Adapter struct {}\n" >> $$REDIS_ADAPTER_DST; \
+		printf "\n" >> $$REDIS_ADAPTER_DST; \
+		printf "func New$${PASCAL}Adapter() outbound_port.$${PASCAL}CachePort {\n" >> $$REDIS_ADAPTER_DST; \
+		printf "\treturn &$${CAMEL}Adapter{}\n" >> $$REDIS_ADAPTER_DST; \
+		printf "}\n" >> $$REDIS_ADAPTER_DST; \
 		echo "[INFO] Created redis adapter file: $$REDIS_ADAPTER_DST"; \
 	fi; \
 	REGISTRY_FILE=internal/adapter/outbound/redis/registry.go; \
