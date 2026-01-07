@@ -1,13 +1,10 @@
 package main
 
 import (
-	"embed"
 	"os"
 
 	"prabogo/internal"
 )
-
-var embedMigrations embed.FS
 
 func main() {
 	app := internal.NewApp()

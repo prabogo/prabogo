@@ -2,11 +2,12 @@ package fiber_inbound_adapter
 
 import (
 	"os"
+
+	"github.com/gofiber/fiber/v2"
+
 	"prabogo/internal/domain"
 	"prabogo/internal/model"
 	"prabogo/utils/activity"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 const (

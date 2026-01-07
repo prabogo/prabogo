@@ -3,11 +3,12 @@ package redis_outbound_adapter
 import (
 	"context"
 	"encoding/json"
+
+	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
+
 	"prabogo/internal/model"
 	outbound_port "prabogo/internal/port/outbound"
 	"prabogo/utils/redis"
-
-	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
 )
 
 type clientAdapter struct{}

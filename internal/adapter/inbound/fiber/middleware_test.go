@@ -49,6 +49,7 @@ func TestMiddlewareAdapter(t *testing.T) {
 				req := httptest.NewRequest(http.MethodGet, "/test", nil)
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusUnauthorized)
 			})
 
@@ -57,6 +58,7 @@ func TestMiddlewareAdapter(t *testing.T) {
 				req.Header.Set("Authorization", "Bearer ")
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusUnauthorized)
 			})
 
@@ -68,6 +70,7 @@ func TestMiddlewareAdapter(t *testing.T) {
 				req.Header.Set("Authorization", "Bearer invalid-key")
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusUnauthorized)
 			})
 
@@ -79,6 +82,7 @@ func TestMiddlewareAdapter(t *testing.T) {
 				req.Header.Set("Authorization", "Bearer valid-key")
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusOK)
 			})
 
@@ -87,6 +91,7 @@ func TestMiddlewareAdapter(t *testing.T) {
 				req.Header.Set("Authorization", "Basic abc123")
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusUnauthorized)
 			})
 		})
@@ -114,6 +119,7 @@ func TestMiddlewareAdapter(t *testing.T) {
 				req := httptest.NewRequest(http.MethodGet, "/test", nil)
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusUnauthorized)
 			})
 
@@ -124,6 +130,7 @@ func TestMiddlewareAdapter(t *testing.T) {
 				req.Header.Set("Authorization", "Bearer valid-client-key")
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusOK)
 			})
 
@@ -137,6 +144,7 @@ func TestMiddlewareAdapter(t *testing.T) {
 				req.Header.Set("Authorization", "Bearer valid-client-key")
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusOK)
 			})
 
@@ -148,6 +156,7 @@ func TestMiddlewareAdapter(t *testing.T) {
 				req.Header.Set("Authorization", "Bearer nonexistent-key")
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusUnauthorized)
 			})
 		})

@@ -80,6 +80,7 @@ func TestClientAdapter(t *testing.T) {
 
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusOK)
 
 				respBody, _ := io.ReadAll(resp.Body)
@@ -94,6 +95,7 @@ func TestClientAdapter(t *testing.T) {
 
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusBadRequest)
 			})
 
@@ -106,6 +108,7 @@ func TestClientAdapter(t *testing.T) {
 
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusInternalServerError)
 			})
 		})
@@ -120,6 +123,7 @@ func TestClientAdapter(t *testing.T) {
 
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusOK)
 
 				respBody, _ := io.ReadAll(resp.Body)
@@ -134,6 +138,7 @@ func TestClientAdapter(t *testing.T) {
 
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusBadRequest)
 			})
 
@@ -146,6 +151,7 @@ func TestClientAdapter(t *testing.T) {
 
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusInternalServerError)
 			})
 		})
@@ -160,6 +166,7 @@ func TestClientAdapter(t *testing.T) {
 
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusOK)
 
 				respBody, _ := io.ReadAll(resp.Body)
@@ -174,6 +181,7 @@ func TestClientAdapter(t *testing.T) {
 
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusBadRequest)
 			})
 
@@ -186,6 +194,7 @@ func TestClientAdapter(t *testing.T) {
 
 				resp, err := app.Test(req)
 				So(err, ShouldBeNil)
+				defer resp.Body.Close()
 				So(resp.StatusCode, ShouldEqual, http.StatusInternalServerError)
 			})
 		})

@@ -36,13 +36,13 @@ func TestClient(t *testing.T) {
 		clientDomain := domain.NewDomain(mockDatabasePort, mockMessagePort, mockCachePort)
 
 		inputs := []model.ClientInput{
-			model.ClientInput{
+			{
 				Name: "Test Client",
 			},
 		}
 
 		outputs := []model.Client{
-			model.Client{
+			{
 				ID: 1,
 				ClientInput: model.ClientInput{
 					Name:      "Test Client",

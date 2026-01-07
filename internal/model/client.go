@@ -1,8 +1,9 @@
 package model
 
 import (
-	"prabogo/utils"
 	"time"
+
+	"prabogo/utils"
 )
 
 const (
@@ -36,8 +37,5 @@ func ClientPrepare(v *ClientInput) {
 }
 
 func (c ClientFilter) IsEmpty() bool {
-	if len(c.IDs) == 0 && len(c.Names) == 0 && len(c.BearerKeys) == 0 {
-		return true
-	}
-	return false
+	return len(c.IDs) == 0 && len(c.Names) == 0 && len(c.BearerKeys) == 0
 }

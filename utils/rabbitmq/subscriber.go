@@ -135,7 +135,7 @@ func SubscriberWithConfig(cfg SubscriberConfig) error {
 		return err
 	}
 
-	consumerKey := fmt.Sprintf("%s", uuid.NewString())
+	consumerKey := uuid.NewString()
 	msgs, err := ch.Consume(
 		q.Name,
 		consumerKey,
@@ -168,7 +168,7 @@ func SubscriberWithConfig(cfg SubscriberConfig) error {
 		}
 	}()
 	log.WithContext(ctx).Infof("subscriber listen exchange: '%s', queue: '%s', topic: '%s', consumerKey: '%s'", cfg.Exchange, cfg.Queue, cfg.RouteKey, consumerKey)
-	_ = <-forever
+	<-forever
 	return nil
 }
 

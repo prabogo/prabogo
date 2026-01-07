@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"embed"
 	"os"
 	"os/signal"
 	"time"
@@ -30,7 +29,6 @@ import (
 	"prabogo/utils/redis"
 )
 
-var embedMigrations embed.FS
 var databaseDriverList = []string{"postgres"}
 var httpDriverList = []string{"fiber"}
 var messageDriverList = []string{"rabbitmq"}
@@ -48,7 +46,7 @@ type App struct {
 func NewApp() *App {
 	ctx := activity.NewContext("init")
 	ctx = activity.WithClientID(ctx, "system")
-	godotenv.Load(".env")
+	_ = godotenv.Load(".env")
 	configureLogging()
 	outboundDatabaseDriver = os.Getenv("OUTBOUND_DATABASE_DRIVER")
 	outboundMessageDriver = os.Getenv("OUTBOUND_MESSAGE_DRIVER")
@@ -100,7 +98,9 @@ func messageOutbound(ctx context.Context) outbound_port.MessagePort {
 
 	switch outboundMessageDriver {
 	case "rabbitmq":
-		rabbitmq.InitMessage()
+		if err := rabbitmq.InitMessage(); err != nil {
+			log.WithContext(ctx).Fatalf("failed to init rabbitmq: %v", err)
+		}
 		return rabbitmq_outbound_adapter.NewAdapter()
 	}
 	return nil

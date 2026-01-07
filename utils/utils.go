@@ -4,14 +4,13 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
 )
 
 func GetCPUSample() (idle, total uint64) {
-	contents, err := ioutil.ReadFile("/proc/stat")
+	contents, err := os.ReadFile("/proc/stat")
 	if err != nil {
 		return
 	}
@@ -21,9 +20,9 @@ func GetCPUSample() (idle, total uint64) {
 		if fields[0] == "cpu" {
 			numFields := len(fields)
 			for i := 1; i < numFields; i++ {
-				val, err := strconv.ParseUint(fields[i], 10, 64)
-				if err != nil {
-					fmt.Println("Error: ", i, fields[i], err)
+				val, parseErr := strconv.ParseUint(fields[i], 10, 64)
+				if parseErr != nil {
+					fmt.Println("Error: ", i, fields[i], parseErr)
 				}
 				total += val // tally up all the numbers to get total ticks
 				if i == 4 {  // idle is the 5th field in the cpu line
@@ -37,7 +36,7 @@ func GetCPUSample() (idle, total uint64) {
 }
 
 func GetMemorySample() (total, free, buffers, cached uint64) {
-	contents, err := ioutil.ReadFile("/proc/meminfo")
+	contents, err := os.ReadFile("/proc/meminfo")
 	if err != nil {
 		return
 	}
@@ -63,7 +62,7 @@ func GetMemorySample() (total, free, buffers, cached uint64) {
 }
 
 func GetCoreSample() (coreCount int) {
-	contents, err := ioutil.ReadFile("/proc/cpuinfo")
+	contents, err := os.ReadFile("/proc/cpuinfo")
 	if err != nil {
 		return
 	}

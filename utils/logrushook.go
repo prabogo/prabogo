@@ -18,7 +18,7 @@ func (hook LogrusSourceContextHook) Levels() []log.Level {
 }
 
 func (hook LogrusSourceContextHook) Fire(entry *log.Entry) error {
-	pc := make([]uintptr, 3, 3)
+	pc := make([]uintptr, 3)
 	cnt := runtime.Callers(6, pc)
 
 	var traces []string

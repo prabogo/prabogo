@@ -3,6 +3,7 @@ package rabbitmq_inbound_adapter
 import (
 	"context"
 	"encoding/json"
+
 	"prabogo/internal/domain"
 	"prabogo/internal/model"
 	inbound_port "prabogo/internal/port/inbound"
