@@ -1,6 +1,5 @@
 .idea/
 .misc/
-go.sum
 coverage.html
 coverage.profile
 .env

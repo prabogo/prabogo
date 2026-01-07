@@ -1,0 +1,40 @@
+run:
+  timeout: 5m
+  go: '1.23'
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gofmt
+    - goimports
+    - misspell
+    - unconvert
+    - bodyclose
+    - nilerr
+    - noctx
+    - prealloc
+
+linters-settings:
+  goimports:
+    local-prefixes: prabogo
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+    - path: tests/mocks/
+      linters:
+        - all
+    - path: internal/migration/
+      linters:
+        - all

@@ -9,6 +9,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+const (
+	authorizationHeader = "Authorization"
+	bearerPrefix        = "Bearer "
+	bearerPrefixLen     = 7
+)
+
 type MiddlewareAdapter interface {
 	InternalAuth(a any) error
 	ClientAuth(a any) error
@@ -28,10 +34,10 @@ func NewMiddlewareAdapter(
 
 func (h *middlewareAdapter) InternalAuth(a any) error {
 	c := a.(*fiber.Ctx)
-	authHeader := c.Get("Authorization")
+	authHeader := c.Get(authorizationHeader)
 	var bearerToken string
-	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
-		bearerToken = authHeader[7:]
+	if len(authHeader) > bearerPrefixLen && authHeader[:bearerPrefixLen] == bearerPrefix {
+		bearerToken = authHeader[bearerPrefixLen:]
 	}
 
 	if bearerToken == "" {
@@ -52,10 +58,10 @@ func (h *middlewareAdapter) InternalAuth(a any) error {
 func (h *middlewareAdapter) ClientAuth(a any) error {
 	c := a.(*fiber.Ctx)
 	ctx := activity.NewContext("http_client_auth")
-	authHeader := c.Get("Authorization")
+	authHeader := c.Get(authorizationHeader)
 	var bearerToken string
-	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
-		bearerToken = authHeader[7:]
+	if len(authHeader) > bearerPrefixLen && authHeader[:bearerPrefixLen] == bearerPrefix {
+		bearerToken = authHeader[bearerPrefixLen:]
 	}
 
 	if bearerToken == "" {
