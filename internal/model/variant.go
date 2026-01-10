@@ -24,8 +24,5 @@ func VariantPrepare(v *ClientInput) {
 }
 
 func (c VariantFilter) IsEmpty() bool {
-	if len(c.IDs) == 0 {
-		return true
-	}
-	return false
+	return len(c.IDs) == 0
 }

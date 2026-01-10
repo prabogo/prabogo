@@ -1,7 +1,7 @@
 IMAGE_NAME=$(shell basename $(CURDIR)):latest
 CONTAINER_NAME=$(shell basename $(CURDIR))_app
 
-.PHONY: build http message command model domain migration-postgres inbound-http inbound-message-rabbitmq inbound-command outbound-database-postgres outbound-http outbound-message-rabbitmq outbound-cache-redis run generate-mocks
+.PHONY: build http message command model domain migration-postgres inbound-http inbound-message-rabbitmq inbound-command outbound-database-postgres outbound-http outbound-message-rabbitmq outbound-cache-redis run generate-mocks lint test test-coverage test-integration
 
 build:
 	@if [ "$(BUILD)" = "true" ]; then \
@@ -807,3 +807,21 @@ generate-mocks:
 	@echo "[INFO] Successfully generated mock for outbound CachePort."
 	@go generate ./internal/port/outbound/registry_message.go
 	@echo "[INFO] Successfully generated mock for outbound MessagePort."
+
+lint:
+	@echo "[INFO] Running golangci-lint..."
+	@golangci-lint run ./...
+
+test:
+	@echo "[INFO] Running unit tests..."
+	@go test -v -race ./internal/domain/... ./internal/adapter/...
+
+test-coverage:
+	@echo "[INFO] Running tests with coverage..."
+	@go test -v -race -coverprofile=coverage.out ./...
+	@go tool cover -html=coverage.out -o coverage.html
+	@echo "[INFO] Coverage report generated: coverage.html"
+
+test-integration:
+	@echo "[INFO] Running integration tests..."
+	@go test -v -tags=integration ./tests/integration/...

@@ -79,8 +79,7 @@ func (h *clientAdapter) Find(a any) error {
 func (h *clientAdapter) Delete(a any) error {
 	c := a.(*fiber.Ctx)
 	ctx := activity.NewContext("http_client_delete_by_filter")
-	var payload model.Request
-	payload.Data = model.ClientFilter{}
+	var payload model.ClientFilter
 	if err := c.BodyParser(&payload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(model.Response{
 			Success: false,
@@ -89,7 +88,7 @@ func (h *clientAdapter) Delete(a any) error {
 	}
 	ctx = context.WithValue(ctx, activity.Payload, payload)
 
-	err := h.domain.Client().DeleteByFilter(ctx, payload.Data.(model.ClientFilter))
+	err := h.domain.Client().DeleteByFilter(ctx, payload)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{
 			Success: false,

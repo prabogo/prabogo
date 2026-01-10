@@ -119,15 +119,17 @@ func (s *clientDomain) IsExists(ctx context.Context, bearerKey string) (bool, er
 				return false, stacktrace.Propagate(err, "check if client exists error")
 			}
 
-			client, err := databaseClientPort.FindByFilter(model.ClientFilter{BearerKeys: []string{bearerKey}}, false)
-			if err != nil {
-				return false, stacktrace.Propagate(err, "find client by filter error")
-			}
+			if exists {
+				client, findErr := databaseClientPort.FindByFilter(model.ClientFilter{BearerKeys: []string{bearerKey}}, false)
+				if findErr != nil {
+					return false, stacktrace.Propagate(findErr, "find client by filter error")
+				}
 
-			if len(client) > 0 {
-				err = cacheClientPort.Set(client[0])
-				if err != nil {
-					return false, stacktrace.Propagate(err, "set client to cache error")
+				if len(client) > 0 {
+					setErr := cacheClientPort.Set(client[0])
+					if setErr != nil {
+						return false, stacktrace.Propagate(setErr, "set client to cache error")
+					}
 				}
 			}
 		} else {

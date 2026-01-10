@@ -29,8 +29,8 @@ func Publish(ctx context.Context, exchange string, exchangeKind ExchangeKind, ro
 	}
 
 	// Use global connection from InitMessage (singleton)
-	if err := InitMessage(); err != nil {
-		return err
+	if initErr := InitMessage(); initErr != nil {
+		return initErr
 	}
 
 	ch, err := rabbitConn.Channel()

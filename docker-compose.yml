@@ -6,7 +6,7 @@ services:
     volumes:
       - redis_data:/data
     restart: unless-stopped
-    command: ["redis-server", "--requirepass", "prabogo"]
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-changeme}"]
 
   redisinsight:
     image: redislabs/redisinsight:latest
@@ -23,9 +23,9 @@ services:
     volumes:
       - ~/apps/prabogo:/var/lib/postgresql/data
     environment:
-      - POSTGRES_PASSWORD=prabogo
-      - POSTGRES_USER=prabogo
-      - POSTGRES_DB=prabogo
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
+      - POSTGRES_USER=${POSTGRES_USER:-prabogo}
+      - POSTGRES_DB=${POSTGRES_DB:-prabogo}
 
   rabbitmq:
     image: rabbitmq:4.0-management
@@ -33,8 +33,8 @@ services:
       - 5672:5672
       - 15672:15672
     environment:
-      RABBITMQ_DEFAULT_USER: prabogo
-      RABBITMQ_DEFAULT_PASS: prabogo
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-prabogo}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-changeme}
 
 volumes:
   redis_data:
