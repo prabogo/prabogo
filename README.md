@@ -30,6 +30,20 @@ docker-compose up -d
 docker-compose down
 ```
 
+## Start Authentik Services with Docker Compose
+
+To start Authentik authentication services (includes PostgreSQL, Redis, Server, and Worker):
+
+```sh
+docker-compose -f docker-compose.authentik.yml up -d
+```
+
+## Stop Authentik Services with Docker Compose
+
+```sh
+docker-compose -f docker-compose.authentik.yml down
+```
+
 ## Run App in Development Mode
 
 To run the application directly (without Makefile or Docker), ensure all required environment variables are set. You can use a `.env` file or export them manually.

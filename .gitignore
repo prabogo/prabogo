@@ -3,6 +3,7 @@
 coverage.html
 coverage.profile
 .env
+.env.*
 __debug_bin*
 var
 etc

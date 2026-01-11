@@ -8,6 +8,7 @@ import (
 	"prabogo/internal/domain"
 	"prabogo/internal/model"
 	"prabogo/utils/activity"
+	"prabogo/utils/jwt"
 )
 
 const (
@@ -72,19 +73,32 @@ func (h *middlewareAdapter) ClientAuth(a any) error {
 		})
 	}
 
-	exists, err := h.domain.Client().IsExists(ctx, bearerToken)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{
-			Success: false,
-			Error:   err.Error(),
-		})
-	}
+	authDriver := os.Getenv("AUTH_DRIVER")
+	if authDriver == "jwt" {
+		jwksURL := os.Getenv("AUTH_JWKS_URL")
 
-	if !exists {
-		return c.Status(fiber.StatusUnauthorized).JSON(model.Response{
-			Success: false,
-			Error:   "Unauthorized",
-		})
+		_, err := jwt.ValidateJWTWithURL(bearerToken, jwksURL)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(model.Response{
+				Success: false,
+				Error:   "Unauthorized: " + err.Error(),
+			})
+		}
+	} else {
+		exists, err := h.domain.Client().IsExists(ctx, bearerToken)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(model.Response{
+				Success: false,
+				Error:   err.Error(),
+			})
+		}
+
+		if !exists {
+			return c.Status(fiber.StatusUnauthorized).JSON(model.Response{
+				Success: false,
+				Error:   "Unauthorized",
+			})
+		}
 	}
 
 	return c.Next()
