@@ -180,7 +180,7 @@ func ValidateJWTWithURL(tokenString, jwksURL string) (bool, error) {
 func GetJWTClaimsWithURL(tokenString, jwksURL string) (jwt.MapClaims, error) {
 	// First validate the token
 	isValid, err := ValidateJWTWithURL(tokenString, jwksURL)
-	if !isValid {
+	if !isValid && err != nil {
 		return nil, err
 	}
 
@@ -193,9 +193,9 @@ func GetJWTClaimsWithURL(tokenString, jwksURL string) (jwt.MapClaims, error) {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		jwkSet, err := jwksClient.GetJWKSet(ctx)
-		if err != nil {
-			return nil, err
+		jwkSet, jwkErr := jwksClient.GetJWKSet(ctx)
+		if jwkErr != nil {
+			return nil, jwkErr
 		}
 
 		for _, jwk := range jwkSet.Keys {
