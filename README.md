@@ -8,6 +8,14 @@
 
 [Design Docs List](./design-docs)
 
+## AI Agents
+
+![Clarifier](./design-docs/images/clarifier.png "Prabogo Clarifier")
+![Task Designer](./design-docs/images/task-designer.png "Prabogo Task Designer")
+![Executor](./design-docs/images/executor.png "Prabogo Executor")
+
+[AI Agents for Development](./design-docs/ai-agents.md)
+
 ## Requirement
 
 1. go version >= go1.24.0

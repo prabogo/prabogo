@@ -1,7 +1,9 @@
 # Design Docs List
 
 * [Architecture](architecture.md)
+* [Authorization](authorization.md)
 * [Repository Structure](repository-structure.md)
+* [AI Agents](ai-agents.md)
 
 ## Generate PDF
 
