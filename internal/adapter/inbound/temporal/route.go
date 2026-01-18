@@ -1,4 +1,4 @@
-package command_inbound_adapter
+package temporal_inbound_adapter
 
 import (
 	"context"
@@ -10,16 +10,13 @@ import (
 func InitRoute(
 	ctx context.Context,
 	args []string,
-	port inbound_port.CommandPort,
+	port inbound_port.WorkflowPort,
 ) {
 	if len(args) > 2 {
-		switch args[1] {
-		case "publish_upsert_client":
-			name := args[2]
-			port.Client().PublishUpsert(name)
-		case "start_upsert_client":
-			name := args[2]
-			port.Client().StartUpsert(name)
+		switch args[2] {
+		case "upsert_client":
+			port.Client().Upsert()
+			return
 		default:
 			log.WithContext(ctx).Info("command not found")
 		}

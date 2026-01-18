@@ -32,7 +32,7 @@ func (adapter *clientAdapter) Upsert(datas []model.ClientInput) error {
 		return err
 	}
 
-	query += ` ON CONFLICT (bearer_key) DO UPDATE SET name = EXCLUDED.name, updated_at = EXCLUDED.updated_at`
+	query += ` ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name, updated_at = EXCLUDED.updated_at`
 	_, err = adapter.db.Exec(query)
 	if err != nil {
 		return err

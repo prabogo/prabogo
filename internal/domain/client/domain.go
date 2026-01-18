@@ -16,23 +16,27 @@ type ClientDomain interface {
 	DeleteByFilter(ctx context.Context, filter model.ClientFilter) error
 	PublishUpsert(ctx context.Context, inputs []model.ClientInput) error
 	IsExists(ctx context.Context, bearerKey string) (bool, error)
+	StartUpsert(ctx context.Context, input model.ClientInput) error
 }
 
 type clientDomain struct {
 	databasePort outbound_port.DatabasePort
 	messagePort  outbound_port.MessagePort
 	cachePort    outbound_port.CachePort
+	workflowPort outbound_port.WorkflowPort
 }
 
 func NewClientDomain(
 	databasePort outbound_port.DatabasePort,
 	messagePort outbound_port.MessagePort,
 	cachePort outbound_port.CachePort,
+	workflowPort outbound_port.WorkflowPort,
 ) ClientDomain {
 	return &clientDomain{
 		databasePort: databasePort,
 		messagePort:  messagePort,
 		cachePort:    cachePort,
+		workflowPort: workflowPort,
 	}
 }
 
@@ -44,7 +48,7 @@ func (s *clientDomain) Upsert(ctx context.Context, inputs []model.ClientInput) (
 	var filter model.ClientFilter
 	for i := range inputs {
 		model.ClientPrepare(&inputs[i])
-		filter.BearerKeys = append(filter.BearerKeys, inputs[i].BearerKey)
+		filter.Names = append(filter.Names, inputs[i].Name)
 	}
 
 	databaseClientPort := s.databasePort.Client()
@@ -140,4 +144,9 @@ func (s *clientDomain) IsExists(ctx context.Context, bearerKey string) (bool, er
 	}
 
 	return exists, nil
+}
+
+func (s *clientDomain) StartUpsert(ctx context.Context, input model.ClientInput) error {
+	workflowClientPort := s.workflowPort.Client()
+	return workflowClientPort.StartUpsert(input)
 }

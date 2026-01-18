@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	UpsertClientMessage = "client.upsert"
+	UpsertClientMessage      = "client.upsert"
+	UpsertClientWorkflowName = "UpsertClientWorkflow"
 )
 
 type Client struct {
@@ -17,7 +18,7 @@ type Client struct {
 
 type ClientInput struct {
 	Name      string    `json:"name" db:"name"`
-	BearerKey string    `json:"bearer_key" db:"bearer_key"`
+	BearerKey string    `json:"bearer_key,omitempty" db:"bearer_key"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }

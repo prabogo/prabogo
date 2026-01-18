@@ -10,7 +10,7 @@
 
 ## Requirement
 
-1. go version >= go1.23.0
+1. go version >= go1.24.0
 
 **Before running the app, copy the example environment file:**
 

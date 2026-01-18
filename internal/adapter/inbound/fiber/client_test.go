@@ -26,16 +26,20 @@ func TestClientAdapter(t *testing.T) {
 		defer mockCtrl.Finish()
 
 		mockDatabasePort := mock_outbound_port.NewMockDatabasePort(mockCtrl)
-		mockCachePort := mock_outbound_port.NewMockCachePort(mockCtrl)
 		mockMessagePort := mock_outbound_port.NewMockMessagePort(mockCtrl)
+		mockCachePort := mock_outbound_port.NewMockCachePort(mockCtrl)
+		mockWorkflowPort := mock_outbound_port.NewMockWorkflowPort(mockCtrl)
+
 		mockClientDatabasePort := mock_outbound_port.NewMockClientDatabasePort(mockCtrl)
 		mockClientCachePort := mock_outbound_port.NewMockClientCachePort(mockCtrl)
+		mockClientWorkflowPort := mock_outbound_port.NewMockClientWorkflowPort(mockCtrl)
 
 		mockDatabasePort.EXPECT().Client().Return(mockClientDatabasePort).AnyTimes()
-		mockCachePort.EXPECT().Client().Return(mockClientCachePort).AnyTimes()
 		mockMessagePort.EXPECT().Client().Return(mock_outbound_port.NewMockClientMessagePort(mockCtrl)).AnyTimes()
+		mockCachePort.EXPECT().Client().Return(mockClientCachePort).AnyTimes()
+		mockWorkflowPort.EXPECT().Client().Return(mockClientWorkflowPort).AnyTimes()
 
-		dom := domain.NewDomain(mockDatabasePort, mockMessagePort, mockCachePort)
+		dom := domain.NewDomain(mockDatabasePort, mockMessagePort, mockCachePort, mockWorkflowPort)
 		adapter := fiber_inbound_adapter.NewAdapter(dom)
 
 		app := fiber.New()

@@ -15,9 +15,11 @@ import (
 	command_inbound_adapter "prabogo/internal/adapter/inbound/command"
 	fiber_inbound_adapter "prabogo/internal/adapter/inbound/fiber"
 	rabbitmq_inbound_adapter "prabogo/internal/adapter/inbound/rabbitmq"
+	temporal_inbound_adapter "prabogo/internal/adapter/inbound/temporal"
 	postgres_outbound_adapter "prabogo/internal/adapter/outbound/postgres"
 	rabbitmq_outbound_adapter "prabogo/internal/adapter/outbound/rabbitmq"
 	redis_outbound_adapter "prabogo/internal/adapter/outbound/redis"
+	temporal_outbound_adapter "prabogo/internal/adapter/outbound/temporal"
 	"prabogo/internal/domain"
 	_ "prabogo/internal/migration/postgres"
 	outbound_port "prabogo/internal/port/outbound"
@@ -32,11 +34,14 @@ import (
 var databaseDriverList = []string{"postgres"}
 var httpDriverList = []string{"fiber"}
 var messageDriverList = []string{"rabbitmq"}
+var workflowDriverList = []string{"temporal"}
 var outboundDatabaseDriver string
 var outboundMessageDriver string
 var outboundCacheDriver string
+var outboundWorkflowDriver string
 var inboundHttpDriver string
 var inboundMessageDriver string
+var inboundWorkflowDriver string
 
 type App struct {
 	ctx    context.Context
@@ -51,12 +56,15 @@ func NewApp() *App {
 	outboundDatabaseDriver = os.Getenv("OUTBOUND_DATABASE_DRIVER")
 	outboundMessageDriver = os.Getenv("OUTBOUND_MESSAGE_DRIVER")
 	outboundCacheDriver = os.Getenv("OUTBOUND_CACHE_DRIVER")
+	outboundWorkflowDriver = os.Getenv("OUTBOUND_WORKFLOW_DRIVER")
 	inboundHttpDriver = os.Getenv("INBOUND_HTTP_DRIVER")
 	inboundMessageDriver = os.Getenv("INBOUND_MESSAGE_DRIVER")
+	inboundWorkflowDriver = os.Getenv("INBOUND_WORKFLOW_DRIVER")
 	domain := domain.NewDomain(
 		databaseOutbound(ctx),
 		messageOutbound(ctx),
 		cacheOutbound(ctx),
+		workflowOutbound(ctx),
 	)
 
 	return &App{
@@ -71,6 +79,8 @@ func (a *App) Run(option string) {
 		a.httpInbound()
 	case "message":
 		a.messageInbound()
+	case "workflow":
+		a.workflowInbound()
 	default:
 		a.commandInbound()
 	}
@@ -116,6 +126,19 @@ func cacheOutbound(ctx context.Context) outbound_port.CachePort {
 	case "redis":
 		redis.InitDatabase()
 		return redis_outbound_adapter.NewAdapter()
+	}
+	return nil
+}
+
+func workflowOutbound(ctx context.Context) outbound_port.WorkflowPort {
+	if !utils.IsInList([]string{"temporal"}, outboundWorkflowDriver) {
+		log.WithContext(ctx).Fatal("workflow driver is not supported")
+		os.Exit(1)
+	}
+
+	switch outboundWorkflowDriver {
+	case "temporal":
+		return temporal_outbound_adapter.NewAdapter()
 	}
 	return nil
 }
@@ -166,6 +189,20 @@ func (a *App) commandInbound() {
 	ctx := a.ctx
 	inboundCommandAdapter := command_inbound_adapter.NewAdapter(a.domain)
 	command_inbound_adapter.InitRoute(ctx, os.Args, inboundCommandAdapter)
+}
+
+func (a *App) workflowInbound() {
+	ctx := a.ctx
+	if !utils.IsInList(workflowDriverList, inboundWorkflowDriver) {
+		log.WithContext(ctx).Fatal("workflow driver is not supported")
+		os.Exit(1)
+	}
+
+	switch inboundWorkflowDriver {
+	case "temporal":
+		inboundWorkflowAdapter := temporal_inbound_adapter.NewAdapter(a.domain)
+		temporal_inbound_adapter.InitRoute(ctx, os.Args, inboundWorkflowAdapter)
+	}
 }
 
 func configureLogging() {

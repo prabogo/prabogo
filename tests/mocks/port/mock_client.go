@@ -180,3 +180,40 @@ func (mr *MockClientCachePortMockRecorder) Set(data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockClientCachePort)(nil).Set), data)
 }
+
+// MockClientWorkflowPort is a mock of ClientWorkflowPort interface.
+type MockClientWorkflowPort struct {
+	ctrl     *gomock.Controller
+	recorder *MockClientWorkflowPortMockRecorder
+}
+
+// MockClientWorkflowPortMockRecorder is the mock recorder for MockClientWorkflowPort.
+type MockClientWorkflowPortMockRecorder struct {
+	mock *MockClientWorkflowPort
+}
+
+// NewMockClientWorkflowPort creates a new mock instance.
+func NewMockClientWorkflowPort(ctrl *gomock.Controller) *MockClientWorkflowPort {
+	mock := &MockClientWorkflowPort{ctrl: ctrl}
+	mock.recorder = &MockClientWorkflowPortMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockClientWorkflowPort) EXPECT() *MockClientWorkflowPortMockRecorder {
+	return m.recorder
+}
+
+// StartUpsert mocks base method.
+func (m *MockClientWorkflowPort) StartUpsert(data model.ClientInput) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StartUpsert", data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StartUpsert indicates an expected call of StartUpsert.
+func (mr *MockClientWorkflowPortMockRecorder) StartUpsert(data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartUpsert", reflect.TypeOf((*MockClientWorkflowPort)(nil).StartUpsert), data)
+}

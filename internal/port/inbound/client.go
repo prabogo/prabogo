@@ -12,4 +12,9 @@ type ClientMessagePort interface {
 
 type ClientCommandPort interface {
 	PublishUpsert(name string)
+	StartUpsert(name string)
+}
+
+type ClientWorkflowPort interface {
+	Upsert()
 }

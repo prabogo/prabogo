@@ -1,7 +1,11 @@
 IMAGE_NAME=$(shell basename $(CURDIR)):latest
 CONTAINER_NAME=$(shell basename $(CURDIR))_app
 
-.PHONY: build http message command model domain migration-postgres inbound-http inbound-message-rabbitmq inbound-command outbound-database-postgres outbound-http outbound-message-rabbitmq outbound-cache-redis run generate-mocks lint test test-coverage test-integration
+# .PHONY declares targets that don't create files with the same name as the target
+# This prevents make from getting confused if files with these names exist in the directory
+# and ensures these targets always run when called, regardless of file timestamps
+# All listed targets are command targets that perform actions rather than creating output files
+.PHONY: build http message command model domain migration-postgres inbound-http-fiber inbound-message-rabbitmq inbound-command inbound-workflow-temporal outbound-database-postgres outbound-http-fiber outbound-message-rabbitmq outbound-cache-redis outbound-workflow-temporal run generate-mocks lint test test-coverage test-integration
 
 build:
 	@if [ "$(BUILD)" = "true" ]; then \
@@ -431,7 +435,115 @@ inbound-command:
 	else \
 		echo "[ERROR] CommandPort interface not found in $$REGISTRY_INTERFACE_FILE"; \
 	fi;
-
+inbound-workflow-temporal:
+	@if [ -z "$(VAL)" ]; then \
+		echo "[ERROR] Please provide VAL, e.g. make inbound-workflow-temporal VAL=name"; \
+		exit 1; \
+	fi
+	@LOWER=$$(echo $(VAL) | tr '[:upper:]' '[:lower:]'); \
+	if [[ "$$LOWER" == *_* ]]; then \
+		CAMEL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {$$1=$$1; for(i=2;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
+		PASCAL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {for(i=1;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
+	else \
+		CAMEL=$$(echo $$LOWER); \
+		PASCAL=$$(echo $$LOWER | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}'); \
+	fi; \
+	DST=internal/port/inbound/$${LOWER}.go; \
+	if [ -f "$$DST" ]; then \
+		echo "[INFO] File $$DST already exists."; \
+		if ! grep -q "$${PASCAL}WorkflowPort" "$$DST"; then \
+			printf "\n" >> $$DST; \
+			printf "type $${PASCAL}WorkflowPort interface {}\n" >> $$DST; \
+			echo "[INFO] Added $${PASCAL}WorkflowPort interface to $$DST"; \
+		else \
+			echo "[INFO] $${PASCAL}WorkflowPort interface already exists in $$DST"; \
+		fi; \
+	else \
+		printf "package inbound_port\n" >> $$DST; \
+		printf "\n" >> $$DST; \
+		printf "type $${PASCAL}WorkflowPort interface {}\n" >> $$DST; \
+		echo "[INFO] Created port interface file: $$DST with Workflow interface"; \
+	fi; \
+	REGISTRY_WORKFLOW_FILE=internal/port/inbound/registry_workflow.go; \
+	if grep -q "type WorkflowPort interface" "$$REGISTRY_WORKFLOW_FILE"; then \
+		if ! grep -q "$${PASCAL}Workflow() $${PASCAL}WorkflowPort" "$$REGISTRY_WORKFLOW_FILE"; then \
+			awk -v m="\t$${PASCAL}Workflow() $${PASCAL}WorkflowPort" '/type WorkflowPort interface/{print; print m; next} 1' "$$REGISTRY_WORKFLOW_FILE" > "$$REGISTRY_WORKFLOW_FILE.tmp" && mv "$$REGISTRY_WORKFLOW_FILE.tmp" "$$REGISTRY_WORKFLOW_FILE"; \
+			echo "[INFO] Updated WorkflowPort interface in workflow registry"; \
+		else \
+			echo "[INFO] $${PASCAL}WorkflowPort method already exists in WorkflowPort interface"; \
+		fi; \
+	else \
+		echo "[ERROR] WorkflowPort interface not found in $$REGISTRY_WORKFLOW_FILE"; \
+	fi; \
+	TEMPORAL_ADAPTER_DIR=internal/adapter/inbound/temporal/$${LOWER}; \
+	if [ ! -d "$$TEMPORAL_ADAPTER_DIR" ]; then \
+		mkdir -p "$$TEMPORAL_ADAPTER_DIR"; \
+		echo "[INFO] Created directory: $$TEMPORAL_ADAPTER_DIR"; \
+	fi; \
+	WORKER_DST=$${TEMPORAL_ADAPTER_DIR}/worker.go; \
+	if [ -f "$$WORKER_DST" ]; then \
+		echo "[INFO] Temporal worker file $$WORKER_DST already exists."; \
+	else \
+		printf "package $${LOWER}_temporal_inbound_adapter\n" >> $$WORKER_DST; \
+		printf "\n" >> $$WORKER_DST; \
+		printf "import (\n" >> $$WORKER_DST; \
+		printf "\t\"prabogo/internal/domain\"\n" >> $$WORKER_DST; \
+		printf "\tinbound_port \"prabogo/internal/port/inbound\"\n" >> $$WORKER_DST; \
+		printf ")\n" >> $$WORKER_DST; \
+		printf "\n" >> $$WORKER_DST; \
+		printf "type $${CAMEL}Adapter struct {\n" >> $$WORKER_DST; \
+		printf "\tdomain domain.Domain\n" >> $$WORKER_DST; \
+		printf "}\n" >> $$WORKER_DST; \
+		printf "\n" >> $$WORKER_DST; \
+		printf "func New$${PASCAL}Adapter(\n" >> $$WORKER_DST; \
+		printf "\tdomain domain.Domain,\n" >> $$WORKER_DST; \
+		printf ") inbound_port.$${PASCAL}WorkflowPort {\n" >> $$WORKER_DST; \
+		printf "\treturn &$${CAMEL}Adapter{\n" >> $$WORKER_DST; \
+		printf "\t\tdomain: domain,\n" >> $$WORKER_DST; \
+		printf "\t}\n" >> $$WORKER_DST; \
+		printf "}\n" >> $$WORKER_DST; \
+		echo "[INFO] Created Temporal worker file: $$WORKER_DST"; \
+	fi; \
+	WORKFLOW_DST=$${TEMPORAL_ADAPTER_DIR}/workflow.go; \
+	if [ -f "$$WORKFLOW_DST" ]; then \
+		echo "[INFO] Temporal workflow file $$WORKFLOW_DST already exists."; \
+	else \
+		printf "package $${LOWER}_temporal_inbound_adapter\n" >> $$WORKFLOW_DST; \
+		printf "\n" >> $$WORKFLOW_DST; \
+		printf "import (\n" >> $$WORKFLOW_DST; \
+		printf "\t\"prabogo/internal/domain\"\n" >> $$WORKFLOW_DST; \
+		printf ")\n" >> $$WORKFLOW_DST; \
+		printf "\n" >> $$WORKFLOW_DST; \
+		printf "type $${PASCAL}Workflow interface{}\n" >> $$WORKFLOW_DST; \
+		printf "\n" >> $$WORKFLOW_DST; \
+		printf "type $${CAMEL}Workflow struct {\n" >> $$WORKFLOW_DST; \
+		printf "\tdomain domain.Domain\n" >> $$WORKFLOW_DST; \
+		printf "}\n" >> $$WORKFLOW_DST; \
+		printf "\n" >> $$WORKFLOW_DST; \
+		printf "func New$${PASCAL}Workflow(\n" >> $$WORKFLOW_DST; \
+		printf "\tdomain domain.Domain,\n" >> $$WORKFLOW_DST; \
+		printf ") $${PASCAL}Workflow {\n" >> $$WORKFLOW_DST; \
+		printf "\treturn &$${CAMEL}Workflow{\n" >> $$WORKFLOW_DST; \
+		printf "\t\tdomain: domain,\n" >> $$WORKFLOW_DST; \
+		printf "\t}\n" >> $$WORKFLOW_DST; \
+		printf "}\n" >> $$WORKFLOW_DST; \
+		echo "[INFO] Created Temporal workflow file: $$WORKFLOW_DST"; \
+	fi; \
+	TEMPORAL_REGISTRY_FILE=internal/adapter/inbound/temporal/registry.go; \
+	if ! grep -q "$${LOWER}_temporal_inbound_adapter" "$$TEMPORAL_REGISTRY_FILE"; then \
+		awk -v p="\t$${LOWER}_temporal_inbound_adapter \"prabogo/internal/adapter/inbound/temporal/$${LOWER}\"" '/import \(/{print; print p; next} 1' "$$TEMPORAL_REGISTRY_FILE" > "$$TEMPORAL_REGISTRY_FILE.tmp" && mv "$$TEMPORAL_REGISTRY_FILE.tmp" "$$TEMPORAL_REGISTRY_FILE"; \
+		echo "[INFO] Added import for $${LOWER} to temporal registry"; \
+	else \
+		echo "[INFO] Import for $${LOWER} already exists in temporal registry"; \
+	fi; \
+	if ! grep -q "func (a \*adapter) $${PASCAL}Workflow()" "$$TEMPORAL_REGISTRY_FILE"; then \
+		echo "[INFO] Adding $${PASCAL}Workflow method to temporal registry adapter..."; \
+		METHOD_TEXT="\nfunc (a *adapter) $${PASCAL}Workflow() inbound_port.$${PASCAL}WorkflowPort {\n\treturn $${LOWER}_temporal_inbound_adapter.New$${PASCAL}Adapter(a.domain)\n}"; \
+		awk -v m="$$METHOD_TEXT" '1; END{print m}' "$$TEMPORAL_REGISTRY_FILE" > "$$TEMPORAL_REGISTRY_FILE.tmp" && mv "$$TEMPORAL_REGISTRY_FILE.tmp" "$$TEMPORAL_REGISTRY_FILE"; \
+		echo "[INFO] Appended $${PASCAL}Workflow method to the bottom of $$TEMPORAL_REGISTRY_FILE"; \
+	else \
+		echo "[INFO] $${PASCAL}Workflow method already exists in temporal registry"; \
+	fi;
 outbound-database-postgres:
 	@if [ -z "$(VAL)" ]; then \
 		echo "[ERROR] Please provide VAL, e.g. make outbound-database-postgres VAL=name"; \
@@ -715,6 +827,76 @@ outbound-cache-redis:
 	go generate ./internal/port/outbound/registry_cache.go; \
 	echo "[INFO] Successfully generated mock for outbound CachePort."
 
+outbound-workflow-temporal:
+	@if [ -z "$(VAL)" ]; then \
+		echo "[ERROR] Please provide VAL, e.g. make outbound-workflow-temporal VAL=name"; \
+		exit 1; \
+	fi
+	@LOWER=$$(echo $(VAL) | tr '[:upper:]' '[:lower:]'); \
+	if [[ "$$LOWER" == *_* ]]; then \
+		CAMEL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {$$1=$$1; for(i=2;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
+		PASCAL=$$(echo "$$LOWER" | awk 'BEGIN{FS="_";OFS=""} {for(i=1;i<=NF;i++) $$i=toupper(substr($$i,1,1)) substr($$i,2)} 1'); \
+	else \
+		CAMEL=$$(echo $$LOWER); \
+		PASCAL=$$(echo $$LOWER | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}'); \
+	fi; \
+	DST=internal/port/outbound/$${LOWER}.go; \
+	if [ -f "$$DST" ]; then \
+		echo "[INFO] File $$DST already exists."; \
+		if ! grep -q "$${PASCAL}WorkflowPort" "$$DST"; then \
+			printf "\n" >> $$DST; \
+			printf "type $${PASCAL}WorkflowPort interface {}\n" >> $$DST; \
+			echo "[INFO] Added $${PASCAL}WorkflowPort interface to $$DST"; \
+		else \
+			echo "[INFO] $${PASCAL}WorkflowPort interface already exists in $$DST"; \
+		fi; \
+	else \
+		printf "package outbound_port\n" >> $$DST; \
+		printf "\n" >> $$DST; \
+		printf "//go:generate mockgen -source=$${LOWER}.go -destination=./../../../tests/mocks/port/mock_$${LOWER}.go\n" >> $$DST; \
+		printf "type $${PASCAL}WorkflowPort interface {}\n" >> $$DST; \
+		echo "[INFO] Created port interface file: $$DST with Workflow interface"; \
+	fi; \
+	TEMPORAL_ADAPTER_DST=internal/adapter/outbound/temporal/$${LOWER}.go; \
+	if [ -f "$$TEMPORAL_ADAPTER_DST" ]; then \
+		echo "[INFO] Temporal adapter file $$TEMPORAL_ADAPTER_DST already exists."; \
+	else \
+		printf "package temporal_outbound_adapter\n" >> $$TEMPORAL_ADAPTER_DST; \
+		printf "\n" >> $$TEMPORAL_ADAPTER_DST; \
+		printf "import (\n" >> $$TEMPORAL_ADAPTER_DST; \
+		printf "\toutbound_port \"prabogo/internal/port/outbound\"\n" >> $$TEMPORAL_ADAPTER_DST; \
+		printf ")\n" >> $$TEMPORAL_ADAPTER_DST; \
+		printf "\n" >> $$TEMPORAL_ADAPTER_DST; \
+		printf "type $${CAMEL}WorkflowAdapter struct {}\n" >> $$TEMPORAL_ADAPTER_DST; \
+		printf "\n" >> $$TEMPORAL_ADAPTER_DST; \
+		printf "func New$${PASCAL}WorkflowAdapter() outbound_port.$${PASCAL}WorkflowPort {\n" >> $$TEMPORAL_ADAPTER_DST; \
+		printf "\treturn &$${CAMEL}WorkflowAdapter{}\n" >> $$TEMPORAL_ADAPTER_DST; \
+		printf "}\n" >> $$TEMPORAL_ADAPTER_DST; \
+		echo "[INFO] Created temporal adapter file: $$TEMPORAL_ADAPTER_DST"; \
+	fi; \
+	REGISTRY_FILE=internal/adapter/outbound/temporal/registry.go; \
+	if ! grep -q "func (a \*adapter) $${PASCAL}()" "$$REGISTRY_FILE"; then \
+		echo "[INFO] Adding $${PASCAL} method to registry adapter..."; \
+		METHOD_TEXT="\nfunc (a *adapter) $${PASCAL}() outbound_port.$${PASCAL}WorkflowPort {\n\treturn New$${PASCAL}WorkflowAdapter()\n}"; \
+		awk -v m="$$METHOD_TEXT" '1; END{print m}' "$$REGISTRY_FILE" > "$$REGISTRY_FILE.tmp" && mv "$$REGISTRY_FILE.tmp" "$$REGISTRY_FILE"; \
+		echo "[INFO] Appended $${PASCAL} method to the bottom of $$REGISTRY_FILE"; \
+	else \
+		echo "[INFO] $${PASCAL} method already exists in temporal registry"; \
+	fi; \
+	REGISTRY_INTERFACE_FILE=internal/port/outbound/registry_workflow.go; \
+	if grep -q "type WorkflowPort interface" "$$REGISTRY_INTERFACE_FILE"; then \
+		if ! grep -q "$${PASCAL}() $${PASCAL}WorkflowPort" "$$REGISTRY_INTERFACE_FILE"; then \
+			awk -v m="\t$${PASCAL}() $${PASCAL}WorkflowPort" '/type WorkflowPort interface *{/{print;print m;next}1' "$$REGISTRY_INTERFACE_FILE" > "$$REGISTRY_INTERFACE_FILE.tmp" && mv "$$REGISTRY_INTERFACE_FILE.tmp" "$$REGISTRY_INTERFACE_FILE"; \
+			echo "[INFO] Updated WorkflowPort interface in registry"; \
+		else \
+			echo "[INFO] $${PASCAL} method already exists in WorkflowPort interface"; \
+		fi; \
+	else \
+		echo "[ERROR] WorkflowPort interface not found in $$REGISTRY_INTERFACE_FILE"; \
+	fi; \
+	go generate ./internal/port/outbound/registry_workflow.go; \
+	echo "[INFO] Successfully generated mock for outbound WorkflowPort."
+
 # Interactive target selector using fzf (if available) or basic shell selection
 # This target displays an interactive menu to select and execute other Makefile targets
 # It handles different parameter requirements based on the target type
@@ -738,7 +920,7 @@ run:
 	if [ -n "$$target" ]; then \
 		echo "[INFO] Selected target: $$target"; \
 		case "$$target" in \
-			"model"|"domain"|"migration-postgres"|"inbound-http-fiber"|"inbound-message-rabbitmq"|"inbound-command"|"outbound-database-postgres"|"outbound-http"|"outbound-message-rabbitmq"|"outbound-cache-redis") \
+			"model"|"domain"|"migration-postgres"|"inbound-http-fiber"|"inbound-message-rabbitmq"|"inbound-command"|"inbound-workflow-temporal"|"outbound-database-postgres"|"outbound-http"|"outbound-message-rabbitmq"|"outbound-cache-redis"|"outbound-workflow-temporal") \
 				printf "Enter VAL parameter: "; \
 				val=$$(bash -c 'read -r val && echo "$$val"'); \
 				if [ -n "$$val" ]; then \

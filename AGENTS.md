@@ -7,7 +7,7 @@ This file contains instructions for AI coding assistants working with the Prabog
 - **Project Name**: Prabogo
 - **Author**: Moch Dieqy Dzulqaidar
 - **License**: MIT License
-- **Go Version**: >= go1.23.0
+- **Go Version**: >= go1.24.0
 
 ## Project Structure
 Prabogo uses a hexagonal architecture (ports and adapters) with the following structure:

@@ -18,3 +18,7 @@ type ClientCachePort interface {
 	Set(data model.Client) error
 	Get(bearerKey string) (model.Client, error)
 }
+
+type ClientWorkflowPort interface {
+	StartUpsert(data model.ClientInput) error
+}

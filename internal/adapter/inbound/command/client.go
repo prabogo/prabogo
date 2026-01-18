@@ -23,12 +23,25 @@ func NewClientAdapter(
 }
 
 func (h *clientAdapter) PublishUpsert(name string) {
-	ctx := activity.NewContext("command_client_upsert")
+	ctx := activity.NewContext("command_client_publish_upsert")
 	ctx = context.WithValue(ctx, activity.Payload, name)
 	payload := []model.ClientInput{{Name: name}}
+
 	err := h.domain.Client().PublishUpsert(ctx, payload)
 	if err != nil {
-		log.WithContext(ctx).Errorf("client upsert error %s: %s", err.Error(), name)
+		log.WithContext(ctx).Errorf("client publish upsert error %s: %s", err.Error(), name)
 	}
-	log.WithContext(ctx).Info("client upsert success")
+	log.WithContext(ctx).Info("client publish upsert success")
+}
+
+func (h *clientAdapter) StartUpsert(name string) {
+	ctx := activity.NewContext("command_client_start_upsert")
+	ctx = context.WithValue(ctx, activity.Payload, name)
+	payload := model.ClientInput{Name: name}
+
+	err := h.domain.Client().StartUpsert(ctx, payload)
+	if err != nil {
+		log.WithContext(ctx).Errorf("client start upsert error %s: %s", err.Error(), name)
+	}
+	log.WithContext(ctx).Infof("client start upsert success")
 }
