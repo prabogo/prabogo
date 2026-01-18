@@ -44,6 +44,22 @@ docker-compose -f docker-compose.authentik.yml up -d
 docker-compose -f docker-compose.authentik.yml down
 ```
 
+## Start Temporal Services with Docker Compose
+
+To start Temporal workflow services (includes PostgreSQL, Elasticsearch, Temporal Server, Admin Tools, and Web UI):
+
+```sh
+docker-compose -f docker-compose.temporal.yml up -d
+```
+
+The Temporal UI will be available at http://localhost:8080 and the Temporal server will be accessible on port 7233.
+
+## Stop Temporal Services with Docker Compose
+
+```sh
+docker-compose -f docker-compose.temporal.yml down
+```
+
 ## Run App in Development Mode
 
 To run the application directly (without Makefile or Docker), ensure all required environment variables are set. You can use a `.env` file or export them manually.
@@ -115,6 +131,11 @@ To install `fzf` (optional):
   make inbound-command VAL=name
   ```
 
+- `inbound-workflow-temporal`: Creates Temporal workflow worker (requires VAL parameter)
+  ```sh
+  make inbound-workflow-temporal VAL=name
+  ```
+
 - `outbound-database-postgres`: Creates PostgreSQL database adapter (requires VAL parameter)
   ```sh
   make outbound-database-postgres VAL=name
@@ -125,7 +146,7 @@ To install `fzf` (optional):
   make outbound-http VAL=name
   ```
 
-- `outbound-message-rabbitmq`: Creates RabbitMQ message adapter (requires VAL parameter)
+- `outbound-message-rabbitmq`: Creates RabbitMQ message publisher adapter (requires VAL parameter)
   ```sh
   make outbound-message-rabbitmq VAL=name
   ```
@@ -133,6 +154,11 @@ To install `fzf` (optional):
 - `outbound-cache-redis`: Creates Redis cache adapter (requires VAL parameter)
   ```sh
   make outbound-cache-redis VAL=name
+  ```
+
+- `outbound-workflow-temporal`: Creates Temporal workflow starter adapter (requires VAL parameter)
+  ```sh
+  make outbound-workflow-temporal VAL=name
   ```
 
 - `generate-mocks`: Generates mock implementations from all go:generate directives in registry files
@@ -168,6 +194,13 @@ To install `fzf` (optional):
   make command CMD=publish_upsert_client VAL=name
   # Force rebuild before running:
   make command CMD=publish_upsert_client VAL=name BUILD=true
+  ```
+
+- `workflow`: Runs the application in Temporal workflow worker mode inside Docker (requires WFL parameter)
+  ```sh
+  make workflow WFL=client_workflow
+  # Force rebuild before running:
+  make workflow WFL=client_workflow BUILD=true
   ```
 
 ## Running test suite

@@ -5,7 +5,7 @@ CONTAINER_NAME=$(shell basename $(CURDIR))_app
 # This prevents make from getting confused if files with these names exist in the directory
 # and ensures these targets always run when called, regardless of file timestamps
 # All listed targets are command targets that perform actions rather than creating output files
-.PHONY: build http message command model domain migration-postgres inbound-http-fiber inbound-message-rabbitmq inbound-command inbound-workflow-temporal outbound-database-postgres outbound-http-fiber outbound-message-rabbitmq outbound-cache-redis outbound-workflow-temporal run generate-mocks lint test test-coverage test-integration
+.PHONY: build http message command workflow model domain migration-postgres inbound-http-fiber inbound-message-rabbitmq inbound-command inbound-workflow-temporal outbound-database-postgres outbound-http-fiber outbound-message-rabbitmq outbound-cache-redis outbound-workflow-temporal run generate-mocks lint test test-coverage test-integration
 
 build:
 	@if [ "$(BUILD)" = "true" ]; then \
@@ -53,6 +53,19 @@ command:
 	  --env-file .env \
 	  --network $(shell basename $(CURDIR))_default \
 	  $(IMAGE_NAME) $(CMD) $(VAL)
+
+workflow:
+	$(MAKE) build BUILD=$(BUILD)
+	@if [ -z "$(WFL)" ]; then \
+	  echo "[ERROR] Please provide WFL, e.g. make workflow WFL=client_workflow"; \
+	  exit 1; \
+	fi
+	@echo "[INFO] Running the application in workflow mode inside Docker with argument: $(WFL)"
+	docker run --rm \
+	  --name $(CONTAINER_NAME)_workflow \
+	  --env-file .env \
+	  --network $(shell basename $(CURDIR))_default \
+	  $(IMAGE_NAME) workflow $(WFL)
 
 model:
 	@if [ -z "$(VAL)" ]; then \
@@ -959,6 +972,21 @@ run:
 					fi \
 				else \
 					echo "[ERROR] Both CMD and VAL parameters are required for target: $$target"; \
+				fi \
+				;; \
+			"workflow") \
+				printf "Enter WFL parameter: "; \
+				wfl=$$(bash -c 'read -r wfl && echo "$$wfl"'); \
+				printf "Force rebuild? (y/N): "; \
+				build=$$(bash -c 'read -r build && echo "$$build"'); \
+				if [ -n "$$wfl" ]; then \
+					if [ "$$build" = "y" ] || [ "$$build" = "Y" ]; then \
+						make $$target WFL=$$wfl BUILD=true; \
+					else \
+						make $$target WFL=$$wfl; \
+					fi \
+				else \
+					echo "[ERROR] WFL parameter is required for target: $$target"; \
 				fi \
 				;; \
 			"http") \
