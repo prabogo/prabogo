@@ -15,8 +15,8 @@ func upClient(ctx context.Context, tx *sql.Tx) error {
 	// This code is executed when the migration is applied.
 	_, err := tx.Exec(`CREATE TABLE IF NOT EXISTS clients (
 		id SERIAL PRIMARY KEY,
-		name VARCHAR(100) UNIQUE NOT NULL,
-		bearer_key VARCHAR(255),
+		name VARCHAR(100),
+		bearer_key VARCHAR(255) UNIQUE,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 	);`)
