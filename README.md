@@ -204,11 +204,11 @@ To install `fzf` (optional):
   make command CMD=publish_upsert_client VAL=name BUILD=true
   ```
 
-- `workflow`: Runs the application in Temporal workflow worker mode inside Docker (requires WFL parameter)
+- `workflow`: Runs the application in workflow worker mode inside Docker (requires WFL parameter)
   ```sh
-  make workflow WFL=client_workflow
+  make workflow WFL=upsert_client
   # Force rebuild before running:
-  make workflow WFL=client_workflow BUILD=true
+  make workflow WFL=upsert_client BUILD=true
   ```
 
 ## Running test suite
