@@ -24,12 +24,13 @@
 
 ```sh
 cp .env.example .env
+cp .env.docker.example .env.docker
 ```
 
 ## Start External Services with Docker Compose
 
 ```sh
-docker-compose up -d
+docker-compose --env-file .env.docker up -d
 ```
 
 ## Stop External Services with Docker Compose
