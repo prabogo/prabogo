@@ -4,21 +4,82 @@
 
 **Prabogo** is a Go framework designed to simplify project development by providing an interactive command interface and built-in instructions for AI assistance. This framework streamlines common engineering tasks, making it easier for software engineers to scaffold, generate, and manage project components efficiently. With Prabogo, developers benefit from automation and intelligent guidance, accelerating the software development process.
 
+Prabogo now uses [Spec Kit](https://github.com/github/spec-kit) to bring spec-driven development into the project, making it easier to guide your AI agent with structured commands during development.
+
 ## Design Docs
 
 [Design Docs List](./docs)
 
-## AI Agents
+## Spec-Driven Development
 
-![Clarifier](./docs/images/clarifier.png "Prabogo Clarifier")
-![Task Designer](./docs/images/task-designer.png "Prabogo Task Designer")
-![Executor](./docs/images/executor.png "Prabogo Executor")
-
-[AI Agents for Development](./docs/ai-agents.md)
+[Learn how to use Spec Kit commands](./docs/spec-driven.md) to systematically develop features with your AI agent.
 
 ## Requirement
 
 1. go version >= go1.24.0
+
+## Spec Kit
+
+This repository is initialized with [Spec Kit](https://github.com/github/spec-kit) for spec-driven development. With Spec Kit, Prabogo follows a spec-driven development workflow so developers can direct AI agents more clearly through structured planning and implementation commands.
+
+GitHub Copilot is the default integration configured in this repository today, but Spec Kit also supports other AI coding agents. If you use a different agent, you can switch the integration to match your setup.
+
+### Install Specify CLI
+
+Spec Kit requires Python 3.11+ and assumes `uv` is already installed.
+
+```sh
+uv tool install specify-cli --python /opt/homebrew/bin/python3.11 --from git+https://github.com/github/spec-kit.git@v0.8.4
+export PATH="$HOME/.local/bin:$PATH"
+specify version
+```
+
+### Initialize Spec Kit In This Repository
+
+If you need to reinstall or refresh the Spec Kit files in this project, run:
+
+```sh
+export PATH="$HOME/.local/bin:$PATH"
+specify init . --force --integration copilot --script sh
+```
+
+This installs the Spec Kit project files under `.specify/` and the GitHub Copilot integration files under `.github/agents/`, `.github/prompts/`, and `.github/copilot-instructions.md`.
+
+### Use Another AI Agent
+
+To see which integrations are available in your installed Spec Kit version, run:
+
+```sh
+specify integration list
+```
+
+If you use a different AI agent, reinitialize Spec Kit with the integration that matches your tool. For example:
+
+```sh
+export PATH="$HOME/.local/bin:$PATH"
+specify init . --force --integration claude --script sh
+```
+
+Or:
+
+```sh
+export PATH="$HOME/.local/bin:$PATH"
+specify init . --force --integration gemini --script sh
+```
+
+When you change the integration, Spec Kit rewrites the agent-specific command and instruction files for that tool. The core workflow stays the same: define principles, write specs, make a plan, generate tasks, and implement with structured agent commands.
+
+### Main Spec Kit Commands
+
+After initialization, you can use the generated Spec Kit commands in your configured AI agent:
+
+```text
+/speckit.constitution
+/speckit.specify
+/speckit.plan
+/speckit.tasks
+/speckit.implement
+```
 
 **Before running the app, copy the example environment file:**
 

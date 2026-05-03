@@ -3,7 +3,7 @@
 * [Architecture](architecture.md)
 * [Authorization](authorization.md)
 * [Repository Structure](repository-structure.md)
-* [AI Agents](ai-agents.md)
+* [Spec-Driven Development](spec-driven.md)
 
 ## Generate PDF
 
