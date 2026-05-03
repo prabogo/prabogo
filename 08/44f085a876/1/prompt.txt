@@ -1,0 +1,1 @@
+Add to #file:README.md how to see checkpoint & explain the checkpoint using entire, just sessions list and explain -c and close the explain using ctrl+z
