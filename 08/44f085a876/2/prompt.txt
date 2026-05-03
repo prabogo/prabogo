@@ -1,0 +1,9 @@
+How to show checkpoint explanation using entire?
+
+---
+
+Why it say "Tokens: 0" ? But I'm using copilot and spec kit agents to do it
+
+---
+
+Add to #file:README.md how to see checkpoint & explain the checkpoint using entire
