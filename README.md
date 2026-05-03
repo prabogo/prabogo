@@ -81,6 +81,26 @@ After initialization, you can use the generated Spec Kit commands in your config
 /speckit.implement
 ```
 
+## Entire.io Integration
+
+[Entire.io](https://docs.entire.io/cli/overview) captures context from AI agent-assisted code changes. For installation and detailed usage, see the [Entire CLI installation guide](https://docs.entire.io/cli/installation).
+
+### Why Prabogo Recommends Entire.io
+
+Prabogo uses Spec Kit for spec-driven development with AI agents. When combined with Entire.io, you get:
+- **Full development context**: Capture prompts, decisions, and iterations alongside your code
+- **Better collaboration**: Future team members understand not just what changed, but why and how it was developed
+- **Session continuity**: Resume interrupted agent sessions instead of starting over
+- **Clean history**: Checkpoint data lives on a separate Git branch, keeping your main history clean
+
+**Quick start:**
+
+```sh
+entire enable
+```
+
+When working with AI agents, Entire automatically captures your session context and links it to commits without cluttering your Git history.
+
 **Before running the app, copy the example environment file:**
 
 ```sh
