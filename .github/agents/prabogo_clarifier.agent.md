@@ -35,7 +35,7 @@ internal/
   └── migration/postgres/     # Database migration scripts
 tests/                        # Test files and mocks
 utils/                        # Utility functions
-design-docs/                  # Architecture and design documentation
+docs/                         # Architecture and design documentation
 ```
 
 ### Technologies

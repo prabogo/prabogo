@@ -32,7 +32,7 @@ Prabogo uses a hexagonal architecture (ports and adapters) with the following st
   - `port/`: Port definitions
     - `inbound/`: Input port definitions
     - `outbound/`: Output port definitions
-- `design-docs/`: Design documentation
+- `docs/`: Design documentation
   - `images/`: Documentation images/diagrams
 - `tests/`: Test files and mocks
   - `mocks/`: Mock implementations for testing

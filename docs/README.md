@@ -9,5 +9,5 @@
 
 ```sh
 $ npm install -g md-to-pdf
-$ md-to-pdf design-docs/filename.md
+$ md-to-pdf docs/filename.md
 ```
