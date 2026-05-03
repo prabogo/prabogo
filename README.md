@@ -29,8 +29,7 @@ GitHub Copilot is the default integration configured in this repository today, b
 Spec Kit requires Python 3.11+ and assumes `uv` is already installed.
 
 ```sh
-uv tool install specify-cli --python /opt/homebrew/bin/python3.11 --from git+https://github.com/github/spec-kit.git@v0.8.4
-export PATH="$HOME/.local/bin:$PATH"
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.8.4
 specify version
 ```
 
@@ -39,8 +38,7 @@ specify version
 If you need to reinstall or refresh the Spec Kit files in this project, run:
 
 ```sh
-export PATH="$HOME/.local/bin:$PATH"
-specify init . --force --integration copilot --script sh
+specify init . --integration copilot
 ```
 
 This installs the Spec Kit project files under `.specify/` and the GitHub Copilot integration files under `.github/agents/`, `.github/prompts/`, and `.github/copilot-instructions.md`.
@@ -56,15 +54,13 @@ specify integration list
 If you use a different AI agent, reinitialize Spec Kit with the integration that matches your tool. For example:
 
 ```sh
-export PATH="$HOME/.local/bin:$PATH"
-specify init . --force --integration claude --script sh
+specify init . --integration claude
 ```
 
 Or:
 
 ```sh
-export PATH="$HOME/.local/bin:$PATH"
-specify init . --force --integration gemini --script sh
+specify init . --integration gemini
 ```
 
 When you change the integration, Spec Kit rewrites the agent-specific command and instruction files for that tool. The core workflow stays the same: define principles, write specs, make a plan, generate tasks, and implement with structured agent commands.
