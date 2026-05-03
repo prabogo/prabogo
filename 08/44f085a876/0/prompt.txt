@@ -1,0 +1,1 @@
+Add to #file:README.md how to see checkpoint & explain the checkpoint using entire, make it simple
