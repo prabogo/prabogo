@@ -1,0 +1,5 @@
+/speckit.constitution This project is public go framework that using Hexagonal Architecture approach. The detail architecture can be found in #file:architecture.md
+
+---
+
+Initialize Git repository for the Prabogo project at /Users/dzulqaidar/go/src/prabogo/prabogo if not already initialized. Check if git is already initialized and if so, report that it is already set up. Return the result of the initialization or the current git status.
