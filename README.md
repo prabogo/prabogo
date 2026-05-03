@@ -101,6 +101,22 @@ entire enable
 
 When working with AI agents, Entire automatically captures your session context and links it to commits without cluttering your Git history.
 
+### View Checkpoints With Entire
+
+To see the available captured sessions and checkpoints, run:
+
+```sh
+entire sessions list
+```
+
+To open the checkpoint explanation view for a specific checkpoint, use `entire explain -c <checkpoint-id>`:
+
+```sh
+entire explain -c <checkpoint-id>
+```
+
+Replace `<checkpoint-id>` with the checkpoint identifier shown in `entire sessions list`. When you are finished viewing the explanation, press `Ctrl+Z` to close it and return to your shell.
+
 **Before running the app, copy the example environment file:**
 
 ```sh
