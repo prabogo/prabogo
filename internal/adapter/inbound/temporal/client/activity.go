@@ -2,10 +2,11 @@ package client_temporal_inbound_adapter
 
 import (
 	"context"
-	"prabogo/internal/domain"
-	"prabogo/internal/model"
 
 	"go.temporal.io/sdk/temporal"
+
+	"prabogo/internal/domain"
+	"prabogo/internal/model"
 )
 
 type ClientActivity interface {
