@@ -5,7 +5,6 @@ import (
 
 	"go.temporal.io/sdk/workflow"
 
-	"prabogo/internal/domain"
 	"prabogo/internal/model"
 )
 
@@ -14,14 +13,14 @@ type ClientWorkflow interface {
 }
 
 type clientWorkflow struct {
-	domain domain.Domain
+	activity ClientActivity
 }
 
 func NewClientWorkflow(
-	domain domain.Domain,
+	activity ClientActivity,
 ) ClientWorkflow {
 	return &clientWorkflow{
-		domain: domain,
+		activity: activity,
 	}
 }
 
@@ -39,7 +38,7 @@ func (g *clientWorkflow) UpsertClientWorkflow(ctx workflow.Context, input model.
 	var results []model.Client
 	err := workflow.ExecuteActivity(
 		ctx,
-		g.domain.Client().Upsert,
+		g.activity.Upsert,
 		[]model.ClientInput{input},
 	).Get(ctx, &results)
 	if err != nil {

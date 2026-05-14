@@ -32,10 +32,11 @@ func (a *clientAdapter) Upsert() {
 		return
 	}
 
-	workflow := NewClientWorkflow(a.domain)
+	activity := NewClientActivity(a.domain)
+	workflow := NewClientWorkflow(activity)
 
 	w.RegisterWorkflow(workflow.UpsertClientWorkflow)
-	w.RegisterActivity(a.domain.Client())
+	w.RegisterActivity(activity)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {

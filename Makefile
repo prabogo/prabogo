@@ -493,29 +493,54 @@ inbound-workflow-temporal:
 		mkdir -p "$$TEMPORAL_ADAPTER_DIR"; \
 		echo "[INFO] Created directory: $$TEMPORAL_ADAPTER_DIR"; \
 	fi; \
-	WORKER_DST=$${TEMPORAL_ADAPTER_DIR}/worker.go; \
-	if [ -f "$$WORKER_DST" ]; then \
-		echo "[INFO] Temporal worker file $$WORKER_DST already exists."; \
+	ADAPTER_DST=$${TEMPORAL_ADAPTER_DIR}/adapter.go; \
+	if [ -f "$$ADAPTER_DST" ]; then \
+		echo "[INFO] Temporal adapter file $$ADAPTER_DST already exists."; \
 	else \
-		printf "package $${LOWER}_temporal_inbound_adapter\n" >> $$WORKER_DST; \
-		printf "\n" >> $$WORKER_DST; \
-		printf "import (\n" >> $$WORKER_DST; \
-		printf "\t\"prabogo/internal/domain\"\n" >> $$WORKER_DST; \
-		printf "\tinbound_port \"prabogo/internal/port/inbound\"\n" >> $$WORKER_DST; \
-		printf ")\n" >> $$WORKER_DST; \
-		printf "\n" >> $$WORKER_DST; \
-		printf "type $${CAMEL}Adapter struct {\n" >> $$WORKER_DST; \
-		printf "\tdomain domain.Domain\n" >> $$WORKER_DST; \
-		printf "}\n" >> $$WORKER_DST; \
-		printf "\n" >> $$WORKER_DST; \
-		printf "func New$${PASCAL}Adapter(\n" >> $$WORKER_DST; \
-		printf "\tdomain domain.Domain,\n" >> $$WORKER_DST; \
-		printf ") inbound_port.$${PASCAL}WorkflowPort {\n" >> $$WORKER_DST; \
-		printf "\treturn &$${CAMEL}Adapter{\n" >> $$WORKER_DST; \
-		printf "\t\tdomain: domain,\n" >> $$WORKER_DST; \
-		printf "\t}\n" >> $$WORKER_DST; \
-		printf "}\n" >> $$WORKER_DST; \
-		echo "[INFO] Created Temporal worker file: $$WORKER_DST"; \
+		printf "package $${LOWER}_temporal_inbound_adapter\n" >> $$ADAPTER_DST; \
+		printf "\n" >> $$ADAPTER_DST; \
+		printf "import (\n" >> $$ADAPTER_DST; \
+		printf "\t\"prabogo/internal/domain\"\n" >> $$ADAPTER_DST; \
+		printf "\tinbound_port \"prabogo/internal/port/inbound\"\n" >> $$ADAPTER_DST; \
+		printf ")\n" >> $$ADAPTER_DST; \
+		printf "\n" >> $$ADAPTER_DST; \
+		printf "type $${CAMEL}Adapter struct {\n" >> $$ADAPTER_DST; \
+		printf "\tdomain domain.Domain\n" >> $$ADAPTER_DST; \
+		printf "}\n" >> $$ADAPTER_DST; \
+		printf "\n" >> $$ADAPTER_DST; \
+		printf "func New$${PASCAL}Adapter(\n" >> $$ADAPTER_DST; \
+		printf "\tdomain domain.Domain,\n" >> $$ADAPTER_DST; \
+		printf ") inbound_port.$${PASCAL}WorkflowPort {\n" >> $$ADAPTER_DST; \
+		printf "\treturn &$${CAMEL}Adapter{\n" >> $$ADAPTER_DST; \
+		printf "\t\tdomain: domain,\n" >> $$ADAPTER_DST; \
+		printf "\t}\n" >> $$ADAPTER_DST; \
+		printf "}\n" >> $$ADAPTER_DST; \
+		echo "[INFO] Created Temporal adapter file: $$ADAPTER_DST"; \
+	fi; \
+	ACTIVITY_DST=$${TEMPORAL_ADAPTER_DIR}/activity.go; \
+	if [ -f "$$ACTIVITY_DST" ]; then \
+		echo "[INFO] Temporal activity file $$ACTIVITY_DST already exists."; \
+	else \
+		printf "package $${LOWER}_temporal_inbound_adapter\n" >> $$ACTIVITY_DST; \
+		printf "\n" >> $$ACTIVITY_DST; \
+		printf "import (\n" >> $$ACTIVITY_DST; \
+		printf "\t\"prabogo/internal/domain\"\n" >> $$ACTIVITY_DST; \
+		printf ")\n" >> $$ACTIVITY_DST; \
+		printf "\n" >> $$ACTIVITY_DST; \
+		printf "type $${PASCAL}Activity interface{}\n" >> $$ACTIVITY_DST; \
+		printf "\n" >> $$ACTIVITY_DST; \
+		printf "type $${CAMEL}Activity struct {\n" >> $$ACTIVITY_DST; \
+		printf "\tdomain domain.Domain\n" >> $$ACTIVITY_DST; \
+		printf "}\n" >> $$ACTIVITY_DST; \
+		printf "\n" >> $$ACTIVITY_DST; \
+		printf "func New$${PASCAL}Activity(\n" >> $$ACTIVITY_DST; \
+		printf "\tdomain domain.Domain,\n" >> $$ACTIVITY_DST; \
+		printf ") $${PASCAL}Activity {\n" >> $$ACTIVITY_DST; \
+		printf "\treturn &$${CAMEL}Activity{\n" >> $$ACTIVITY_DST; \
+		printf "\t\tdomain: domain,\n" >> $$ACTIVITY_DST; \
+		printf "\t}\n" >> $$ACTIVITY_DST; \
+		printf "}\n" >> $$ACTIVITY_DST; \
+		echo "[INFO] Created Temporal activity file: $$ACTIVITY_DST"; \
 	fi; \
 	WORKFLOW_DST=$${TEMPORAL_ADAPTER_DIR}/workflow.go; \
 	if [ -f "$$WORKFLOW_DST" ]; then \
