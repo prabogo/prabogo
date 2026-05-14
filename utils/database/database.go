@@ -11,7 +11,7 @@ import (
 	"prabogo/utils/log"
 )
 
-func InitDatabase(ctx context.Context, outboundDatabaseDriver string) *sql.DB {
+func InitDatabase(ctx context.Context, outboundDatabaseDriver string, isUseMigration bool) *sql.DB {
 	db, err := sql.Open(outboundDatabaseDriver, utils.GetDatabaseString())
 	if err != nil {
 		log.WithContext(ctx).Fatalf("failed to open database: %+v", err)
@@ -23,9 +23,11 @@ func InitDatabase(ctx context.Context, outboundDatabaseDriver string) *sql.DB {
 		os.Exit(1)
 	}
 
-	if err := goose.Up(db, utils.GetMigrationDir()); err != nil {
-		log.WithContext(ctx).Fatalf("failed to running migration: %+v", err)
-		os.Exit(1)
+	if isUseMigration {
+		if err := goose.Up(db, utils.GetMigrationDir()); err != nil {
+			log.WithContext(ctx).Fatalf("failed to running migration: %+v", err)
+			os.Exit(1)
+		}
 	}
 
 	return db

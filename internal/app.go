@@ -96,7 +96,9 @@ func databaseOutbound(ctx context.Context) outbound_port.DatabasePort {
 		log.WithContext(ctx).Fatal("database driver is not supported")
 		os.Exit(1)
 	}
-	db := database.InitDatabase(ctx, outboundDatabaseDriver)
+
+	isUseMigration := true
+	db := database.InitDatabase(ctx, outboundDatabaseDriver, isUseMigration)
 
 	switch outboundDatabaseDriver {
 	case "postgres":
