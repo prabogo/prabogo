@@ -34,6 +34,7 @@ import (
 var databaseDriverList = []string{"postgres"}
 var httpDriverList = []string{"fiber"}
 var messageDriverList = []string{"rabbitmq"}
+var cacheDriverList = []string{"redis"}
 var workflowDriverList = []string{"temporal"}
 var outboundDatabaseDriver string
 var outboundMessageDriver string
@@ -88,6 +89,10 @@ func (a *App) Run(option string) {
 
 func databaseOutbound(ctx context.Context) outbound_port.DatabasePort {
 	if !utils.IsInList(databaseDriverList, outboundDatabaseDriver) {
+		if outboundDatabaseDriver == "" {
+			return nil
+		}
+
 		log.WithContext(ctx).Fatal("database driver is not supported")
 		os.Exit(1)
 	}
@@ -102,6 +107,10 @@ func databaseOutbound(ctx context.Context) outbound_port.DatabasePort {
 
 func messageOutbound(ctx context.Context) outbound_port.MessagePort {
 	if !utils.IsInList(messageDriverList, outboundMessageDriver) {
+		if outboundMessageDriver == "" {
+			return nil
+		}
+
 		log.WithContext(ctx).Fatal("message driver is not supported")
 		os.Exit(1)
 	}
@@ -117,7 +126,11 @@ func messageOutbound(ctx context.Context) outbound_port.MessagePort {
 }
 
 func cacheOutbound(ctx context.Context) outbound_port.CachePort {
-	if !utils.IsInList([]string{"redis"}, outboundCacheDriver) {
+	if !utils.IsInList(cacheDriverList, outboundCacheDriver) {
+		if outboundCacheDriver == "" {
+			return nil
+		}
+
 		log.WithContext(ctx).Fatal("cache driver is not supported")
 		os.Exit(1)
 	}
@@ -131,7 +144,11 @@ func cacheOutbound(ctx context.Context) outbound_port.CachePort {
 }
 
 func workflowOutbound(ctx context.Context) outbound_port.WorkflowPort {
-	if !utils.IsInList([]string{"temporal"}, outboundWorkflowDriver) {
+	if !utils.IsInList(workflowDriverList, outboundWorkflowDriver) {
+		if outboundWorkflowDriver == "" {
+			return nil
+		}
+
 		log.WithContext(ctx).Fatal("workflow driver is not supported")
 		os.Exit(1)
 	}
