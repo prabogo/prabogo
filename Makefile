@@ -548,21 +548,17 @@ inbound-workflow-temporal:
 	else \
 		printf "package $${LOWER}_temporal_inbound_adapter\n" >> $$WORKFLOW_DST; \
 		printf "\n" >> $$WORKFLOW_DST; \
-		printf "import (\n" >> $$WORKFLOW_DST; \
-		printf "\t\"prabogo/internal/domain\"\n" >> $$WORKFLOW_DST; \
-		printf ")\n" >> $$WORKFLOW_DST; \
-		printf "\n" >> $$WORKFLOW_DST; \
 		printf "type $${PASCAL}Workflow interface{}\n" >> $$WORKFLOW_DST; \
 		printf "\n" >> $$WORKFLOW_DST; \
 		printf "type $${CAMEL}Workflow struct {\n" >> $$WORKFLOW_DST; \
-		printf "\tdomain domain.Domain\n" >> $$WORKFLOW_DST; \
+		printf "\tactivity $${PASCAL}Activity\n" >> $$WORKFLOW_DST; \
 		printf "}\n" >> $$WORKFLOW_DST; \
 		printf "\n" >> $$WORKFLOW_DST; \
 		printf "func New$${PASCAL}Workflow(\n" >> $$WORKFLOW_DST; \
-		printf "\tdomain domain.Domain,\n" >> $$WORKFLOW_DST; \
+		printf "\tactivity $${PASCAL}Activity,\n" >> $$WORKFLOW_DST; \
 		printf ") $${PASCAL}Workflow {\n" >> $$WORKFLOW_DST; \
 		printf "\treturn &$${CAMEL}Workflow{\n" >> $$WORKFLOW_DST; \
-		printf "\t\tdomain: domain,\n" >> $$WORKFLOW_DST; \
+		printf "\t\tactivity: activity,\n" >> $$WORKFLOW_DST; \
 		printf "\t}\n" >> $$WORKFLOW_DST; \
 		printf "}\n" >> $$WORKFLOW_DST; \
 		echo "[INFO] Created Temporal workflow file: $$WORKFLOW_DST"; \
