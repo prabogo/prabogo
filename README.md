@@ -180,21 +180,25 @@ go run cmd/main.go http
 
 Make sure external dependencies (such as PostgreSQL, RabbitMQ, and Redis) are running, either via Docker Compose or another method.
 
-## Makefile Commands
+## CLI Commands
 
-The project includes a comprehensive Makefile with various helpful commands for code generation and development tasks.
+The project uses [`prabogo-cli`](https://github.com/prabogo/prabogo-cli) for code generation and development tasks. Install it with:
+
+```sh
+go install github.com/prabogo/prabogo-cli@latest
+```
 
 ### Interactive Command Runner
 
 ![Alt text](./docs/images/option.gif "Option")
 
-You can use the interactive target selector to choose and run Makefile targets:
+You can use the interactive target selector to choose and run targets:
 
 ```sh
-make run
+prabogo-cli run
 ```
 
-This will display an interactive menu to select a Makefile target and will prompt for any required parameters. The selector works in two modes:
+This will display an interactive menu to select a target and will prompt for any required parameters. The selector works in two modes:
 
 1. If `fzf` is installed: Uses a fuzzy-search interactive selector (recommended for best experience)
 2. If `fzf` is not available: Falls back to a basic numbered menu selection
@@ -204,105 +208,105 @@ To install `fzf` (optional):
 - Linux: `apt install fzf` (Ubuntu/Debian) or `dnf install fzf` (Fedora)
 - Windows: With chocolatey: `choco install fzf` or with WSL, follow Linux instructions
 
-### Common Makefile Targets
+### Common CLI Targets
 
 #### Code Generation Targets
 
-- `model`: Creates a model/entity with necessary structures (requires VAL parameter)
+- `model`: Creates a model/entity with necessary structures
   ```sh
-  make model VAL=name
+  prabogo-cli model name
   ```
 
-- `migration-postgres`: Creates a PostgreSQL migration file (requires VAL parameter)
+- `migration-postgres`: Creates a PostgreSQL migration file
   ```sh
-  make migration-postgres VAL=name
+  prabogo-cli migration-postgres name
   ```
 
-- `inbound-http-fiber`: Creates HTTP handlers using Fiber framework (requires VAL parameter)
+- `inbound-http-fiber`: Creates HTTP handlers using Fiber framework
   ```sh
-  make inbound-http-fiber VAL=name
+  prabogo-cli inbound-http-fiber name
   ```
 
-- `inbound-message-rabbitmq`: Creates RabbitMQ message consumers (requires VAL parameter)
+- `inbound-message-rabbitmq`: Creates RabbitMQ message consumers
   ```sh
-  make inbound-message-rabbitmq VAL=name
+  prabogo-cli inbound-message-rabbitmq name
   ```
 
-- `inbound-command`: Creates command line interface handlers (requires VAL parameter)
+- `inbound-command`: Creates command line interface handlers
   ```sh
-  make inbound-command VAL=name
+  prabogo-cli inbound-command name
   ```
 
-- `inbound-workflow-temporal`: Creates Temporal workflow worker (requires VAL parameter)
+- `inbound-workflow-temporal`: Creates Temporal workflow worker
   ```sh
-  make inbound-workflow-temporal VAL=name
+  prabogo-cli inbound-workflow-temporal name
   ```
 
-- `outbound-database-postgres`: Creates PostgreSQL database adapter (requires VAL parameter)
+- `outbound-database-postgres`: Creates PostgreSQL database adapter
   ```sh
-  make outbound-database-postgres VAL=name
+  prabogo-cli outbound-database-postgres name
   ```
 
-- `outbound-http`: Creates HTTP adapter (requires VAL parameter)
+- `outbound-http`: Creates HTTP adapter
   ```sh
-  make outbound-http VAL=name
+  prabogo-cli outbound-http name
   ```
 
-- `outbound-message-rabbitmq`: Creates RabbitMQ message publisher adapter (requires VAL parameter)
+- `outbound-message-rabbitmq`: Creates RabbitMQ message publisher adapter
   ```sh
-  make outbound-message-rabbitmq VAL=name
+  prabogo-cli outbound-message-rabbitmq name
   ```
 
-- `outbound-cache-redis`: Creates Redis cache adapter (requires VAL parameter)
+- `outbound-cache-redis`: Creates Redis cache adapter
   ```sh
-  make outbound-cache-redis VAL=name
+  prabogo-cli outbound-cache-redis name
   ```
 
-- `outbound-workflow-temporal`: Creates Temporal workflow starter adapter (requires VAL parameter)
+- `outbound-workflow-temporal`: Creates Temporal workflow starter adapter
   ```sh
-  make outbound-workflow-temporal VAL=name
+  prabogo-cli outbound-workflow-temporal name
   ```
 
 - `generate-mocks`: Generates mock implementations from all go:generate directives in registry files
   ```sh
-  make generate-mocks
+  prabogo-cli generate-mocks
   ```
 
 #### Runtime Targets
 
 - `build`: Builds the Docker image for the application
   ```sh
-  make build
+  prabogo-cli build
   # Force rebuild regardless of existing image:
-  make build BUILD=true
+  prabogo-cli build --build
   ```
 
 - `http`: Runs the application in HTTP server mode inside Docker
   ```sh
-  make http
+  prabogo-cli http
   # Force rebuild before running:
-  make http BUILD=true
+  prabogo-cli http --build
   ```
 
-- `message`: Runs the application in message consumer mode inside Docker (requires SUB parameter)
+- `message`: Runs the application in message consumer mode inside Docker
   ```sh
-  make message SUB=upsert_client
+  prabogo-cli message upsert_client
   # Force rebuild before running:
-  make message SUB=upsert_client BUILD=true
+  prabogo-cli message upsert_client --build
   ```
 
-- `command`: Executes a specific command in the application (requires CMD and VAL parameters)
+- `command`: Executes a specific command in the application
   ```sh
-  make command CMD=publish_upsert_client VAL=name
+  prabogo-cli command publish_upsert_client name
   # Force rebuild before running:
-  make command CMD=publish_upsert_client VAL=name BUILD=true
+  prabogo-cli command publish_upsert_client name --build
   ```
 
-- `workflow`: Runs the application in workflow worker mode inside Docker (requires WFL parameter)
+- `workflow`: Runs the application in workflow worker mode inside Docker
   ```sh
-  make workflow WFL=upsert_client
+  prabogo-cli workflow upsert_client
   # Force rebuild before running:
-  make workflow WFL=upsert_client BUILD=true
+  prabogo-cli workflow upsert_client --build
   ```
 
 ## Running test suite
