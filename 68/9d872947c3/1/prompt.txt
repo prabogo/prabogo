@@ -1,0 +1,9 @@
+Build a new inbound adapter for grpc, make it same like #file:fiber endpoint with same domain also. Update the documentation and make sure all working
+
+---
+
+Continue: "Continue to iterate?"
+
+---
+
+Change #file:prabogo.proto to adapter.proto

@@ -1,0 +1,79 @@
+{
+  "cli_version": "0.6.1",
+  "checkpoint_id": "689d872947c3",
+  "session_id": "7c10b874-38f7-47ce-97a8-6744a49e2cd1",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-09T00:30:52.668109Z",
+  "branch": "master",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "README.md",
+    "go.mod",
+    "go.sum"
+  ],
+  "agent": "Copilot CLI",
+  "model": "",
+  "turn_id": "9637b860a9b1",
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-09T00:30:52.660591Z",
+    "agent_lines": 127,
+    "agent_removed": 125,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 4,
+    "total_committed": 127,
+    "total_lines_changed": 256,
+    "agent_percentage": 98.4375,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 2099,
+      "user_lines_removed": 5,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "go.mod": 2,
+        "go.sum": 2,
+        "internal/adapter/inbound/grpc/client.go": 67,
+        "internal/adapter/inbound/grpc/middleware.go": 95,
+        "internal/adapter/inbound/grpc/pb/prabogo.pb.go": 1206,
+        "internal/adapter/inbound/grpc/pb/prabogo_grpc.pb.go": 221,
+        "internal/adapter/inbound/grpc/ping.go": 53,
+        "internal/adapter/inbound/grpc/proto/prabogo.proto": 107,
+        "internal/adapter/inbound/grpc/registry.go": 30,
+        "internal/adapter/inbound/grpc/route.go": 43,
+        "internal/adapter/inbound/grpc/server.go": 188,
+        "internal/app.go": 20,
+        "internal/model/ping.go": 30,
+        "internal/port/inbound/client.go": 11,
+        "internal/port/inbound/middleware.go": 7,
+        "internal/port/inbound/ping.go": 10,
+        "internal/port/inbound/registry_grpc.go": 7
+      },
+      "user_removed_per_file": {
+        "go.mod": 2,
+        "go.sum": 2,
+        "internal/port/inbound/client.go": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 2489,
+      "agent_lines_removed": 6
+    }
+  ]
+}
