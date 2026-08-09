@@ -1,0 +1,70 @@
+{
+  "cli_version": "0.6.1",
+  "checkpoint_id": "689d872947c3",
+  "session_id": "7aa56ca5-4dd1-4818-96ff-ecefb022bedc",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-09T00:30:52.480902Z",
+  "branch": "master",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "go.mod",
+    "go.sum"
+  ],
+  "agent": "Copilot CLI",
+  "model": "",
+  "turn_id": "12b1437dd0fb",
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-09T00:30:52.478325Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 121,
+    "human_removed": 137,
+    "total_committed": 0,
+    "total_lines_changed": 258,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 121,
+      "user_lines_removed": 129,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "go.mod": 34,
+        "go.sum": 87
+      },
+      "user_removed_per_file": {
+        "go.mod": 34,
+        "go.sum": 95
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 121,
+      "user_lines_removed": 129,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "go.mod": 34,
+        "go.sum": 87
+      },
+      "user_removed_per_file": {
+        "go.mod": 34,
+        "go.sum": 95
+      }
+    }
+  ]
+}

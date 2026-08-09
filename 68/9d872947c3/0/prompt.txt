@@ -1,0 +1,5 @@
+Why there's a grpc in go mod?
+
+---
+
+I already deleted 002-grpc-inbound-adapter
