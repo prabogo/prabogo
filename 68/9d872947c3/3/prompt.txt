@@ -1,0 +1,9 @@
+Running tool: /Users/dzulqaidar/.gvm/gos/go1.25/bin/go test -test.fullpath=true -timeout 30s -coverprofile=/var/folders/w8/3_mmv6t16xnfbm54l76ys4dw0000gn/T/vscode-go064WEB/go-code-cover
+
+# prabogo/tests/integration
+package prabogo/tests/integration: build constraints exclude all Go files in /Users/dzulqaidar/go/src/prabogo/prabogo/tests/integration
+FAIL	prabogo/tests/integration [setup failed]
+
+---
+
+Add to readme
