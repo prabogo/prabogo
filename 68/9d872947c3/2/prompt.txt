@@ -1,0 +1,22 @@
+golang.org/x/crypto have so many critical vulneralbilities, what is this for and can we remove it?
+
+---
+
+github.com/docker/docker also have high vulneralbilities
+
+---
+
+[Fiber has an insecure fallback in utils.UUIDv4() / utils.UUID() — predictable / zero‑UUID on crypto/rand failure](https://github.com/prabogo/prabogo/security/dependabot/9) [Critical](https://github.com/prabogo/prabogo/security/dependabot?q=is%3Aopen+severity%3Acritical) [Direct](https://github.com/prabogo/prabogo/security/dependabot?q=is%3Aopen+relationship%3Adirect)
+#9 opened 6 months ago • Detected in github.com/gofiber/fiber/v2 (Go) • go.mod
+
+---
+
+[gRPC-Go: xDS RBAC and HTTP/2 Vulnerabilities](https://github.com/prabogo/prabogo/security/dependabot/33) [High](https://github.com/prabogo/prabogo/security/dependabot?q=is%3Aopen+severity%3Ahigh)
+#33 opened 2 weeks ago • Detected in google.golang.org/grpc (Go) • go.mod
+
+---
+
+Select alert: Go Net HTML parser is vulnerable to denial of service
+
+[Go Net HTML parser is vulnerable to denial of service](https://github.com/prabogo/prabogo/security/dependabot/18) [Moderate](https://github.com/prabogo/prabogo/security/dependabot?q=is%3Aopen+severity%3Amoderate)
+#18 opened last month • Detected in golang.org/x/net (Go) • go.mod
