@@ -1,6 +1,7 @@
 package fiber_inbound_adapter
 
 import (
+	"crypto/subtle"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,6 +10,7 @@ import (
 	"prabogo/internal/model"
 	"prabogo/utils/activity"
 	"prabogo/utils/jwt"
+	"prabogo/utils/log"
 )
 
 const (
@@ -48,7 +50,15 @@ func (h *middlewareAdapter) InternalAuth(a any) error {
 		})
 	}
 
-	if bearerToken != os.Getenv("INTERNAL_KEY") {
+	expectedKey := os.Getenv("INTERNAL_KEY")
+	if expectedKey == "" {
+		log.WithContext(activity.NewContext("http_internal_auth")).Error("INTERNAL_KEY is not configured")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Internal Server Error",
+		})
+	}
+
+	if subtle.ConstantTimeCompare([]byte(bearerToken), []byte(expectedKey)) != 1 {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Unauthorized",
 		})
@@ -79,17 +89,19 @@ func (h *middlewareAdapter) ClientAuth(a any) error {
 
 		_, err := jwt.ValidateJWTWithURL(bearerToken, jwksURL)
 		if err != nil {
+			log.WithContext(ctx).Error(err.Error())
 			return c.Status(fiber.StatusUnauthorized).JSON(model.Response{
 				Success: false,
-				Error:   "Unauthorized: " + err.Error(),
+				Error:   "Unauthorized",
 			})
 		}
 	} else {
 		exists, err := h.domain.Client().IsExists(ctx, bearerToken)
 		if err != nil {
+			log.WithContext(ctx).Error(err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON(model.Response{
 				Success: false,
-				Error:   err.Error(),
+				Error:   "Internal Server Error",
 			})
 		}
 
