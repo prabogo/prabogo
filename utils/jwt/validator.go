@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -27,6 +28,18 @@ type JWK struct {
 	E   string `json:"e"`
 }
 
+// jwksCacheEntry holds cached JWKS with expiry
+type jwksCacheEntry struct {
+	jwkSet    *JWKSet
+	expiresAt time.Time
+}
+
+var (
+	jwksCache    = make(map[string]*jwksCacheEntry)
+	jwksCacheMu  sync.RWMutex
+	jwksCacheTTL = 5 * time.Minute
+)
+
 // JWKSClient handles fetching and caching JWKS
 type JWKSClient struct {
 	jwksURL string
@@ -43,8 +56,15 @@ func NewJWKSClient(jwksURL string) *JWKSClient {
 	}
 }
 
-// GetJWKSet fetches the JWKS from the URL
+// GetJWKSet fetches the JWKS from the URL with 5-minute cache
 func (c *JWKSClient) GetJWKSet(ctx context.Context) (*JWKSet, error) {
+	jwksCacheMu.RLock()
+	if entry, ok := jwksCache[c.jwksURL]; ok && time.Now().Before(entry.expiresAt) {
+		jwksCacheMu.RUnlock()
+		return entry.jwkSet, nil
+	}
+	jwksCacheMu.RUnlock()
+
 	req, err := http.NewRequestWithContext(ctx, "GET", c.jwksURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -64,6 +84,10 @@ func (c *JWKSClient) GetJWKSet(ctx context.Context) (*JWKSet, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&jwkSet); err != nil {
 		return nil, fmt.Errorf("failed to decode JWKS: %w", err)
 	}
+
+	jwksCacheMu.Lock()
+	jwksCache[c.jwksURL] = &jwksCacheEntry{jwkSet: &jwkSet, expiresAt: time.Now().Add(jwksCacheTTL)}
+	jwksCacheMu.Unlock()
 
 	return &jwkSet, nil
 }
@@ -88,13 +112,10 @@ func (jwk *JWK) GetPublicKey() (*rsa.PublicKey, error) {
 
 	// Convert to big.Int
 	n := new(big.Int).SetBytes(nBytes)
-	var e int
-	if len(eBytes) == 3 {
-		e = int(eBytes[0])<<16 + int(eBytes[1])<<8 + int(eBytes[2])
-	} else if len(eBytes) == 4 {
-		e = int(eBytes[0])<<24 + int(eBytes[1])<<16 + int(eBytes[2])<<8 + int(eBytes[3])
-	} else {
-		return nil, fmt.Errorf("invalid exponent length")
+	eBig := new(big.Int).SetBytes(eBytes)
+	e := int(eBig.Int64())
+	if e == 0 {
+		return nil, fmt.Errorf("invalid exponent")
 	}
 
 	return &rsa.PublicKey{
@@ -178,43 +199,45 @@ func ValidateJWTWithURL(tokenString, jwksURL string) (bool, error) {
 
 // GetJWTClaimsWithURL validates JWT with specific URL and returns the claims map
 func GetJWTClaimsWithURL(tokenString, jwksURL string) (jwt.MapClaims, error) {
-	// First validate the token
-	isValid, err := ValidateJWTWithURL(tokenString, jwksURL)
-	if !isValid && err != nil {
-		return nil, err
-	}
+	jwksClient := NewJWKSClient(jwksURL)
 
-	// Parse token again to get claims (we know it's valid now)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// We already validated, so just get the key again
-		jwksClient := NewJWKSClient(jwksURL)
-		kid := token.Header["kid"].(string)
-
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		kid, ok := token.Header["kid"].(string)
+		if !ok {
+			return nil, fmt.Errorf("kid not found in token header")
+		}
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
-
 		jwkSet, jwkErr := jwksClient.GetJWKSet(ctx)
 		if jwkErr != nil {
 			return nil, jwkErr
 		}
-
 		for _, jwk := range jwkSet.Keys {
 			if jwk.Kid == kid {
 				return jwk.GetPublicKey()
 			}
 		}
-
 		return nil, fmt.Errorf("key not found")
 	})
-
 	if err != nil {
 		return nil, err
 	}
-
+	if !token.Valid {
+		return nil, fmt.Errorf("token is not valid")
+	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
 		return nil, fmt.Errorf("failed to parse claims")
 	}
-
+	if exp, ok := claims["exp"].(float64); ok {
+		if time.Now().After(time.Unix(int64(exp), 0)) {
+			return nil, fmt.Errorf("token has expired")
+		}
+	} else {
+		return nil, fmt.Errorf("token does not contain expiration claim")
+	}
 	return claims, nil
 }
