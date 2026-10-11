@@ -17,10 +17,21 @@ type Trail struct {
 	Payload interface{}
 }
 
+// WithContext returns a logrus entry carrying the fields from ctx (activity
+// context). Trace and span IDs are NOT added here — the OTel Logs SDK
+// (OTelLogrusHook in otel_hook.go) populates the standard OTLP
+// LogRecord.trace_id / LogRecord.span_id fields automatically from the span
+// context in entry.Context. Adding them again as logrus fields would duplicate
+// them in the log body (attributes.trace_id / attributes.span_id), which is
+// redundant and non-standard.
+//
+// Grafana correlation relies on the SDK's top-level fields:
+//   - Tempo tracesToLogs (filterByTraceID) → Loki | json | traceid="..."
+//   - Loki derivedFields → regex on the top-level "traceid" field in the body
 func WithContext(ctx context.Context) *logrus.Entry {
 	fields := activity.GetFields(ctx)
 
-	return logrus.WithFields(fields)
+	return logrus.WithContext(ctx).WithFields(fields)
 }
 
 func LogOrmer(obj interface{}, prefix string) {

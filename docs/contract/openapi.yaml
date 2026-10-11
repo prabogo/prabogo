@@ -1,0 +1,506 @@
+openapi: 3.0.3
+info:
+  title: Prabogo API
+  description: |
+    HTTP API exposed by the Prabogo service over its Fiber inbound adapter.
+
+    The API exposes two distinct areas:
+    - **Internal endpoints** (`/internal`): protected by the internal bearer key
+      (`Authorization: Bearer $internalKey`) and used for service-to-service
+      client management (upsert, find, delete).
+    - **Public endpoints** (`/v1`): protected by client authentication and used
+      by API consumers to check service health.
+
+    Authentication is via the `Authorization: Bearer <token>` header. For the
+    internal endpoints the token is provided by the `internalKey` variable and
+    validated against the `INTERNAL_KEY` environment variable. For the public
+    endpoints, the token is provided by the `bearerKey` variable and validated
+    either against the stored client bearer keys or, when `AUTH_DRIVER=jwt`,
+    against the configured Authentik JWKS URL.
+  version: 1.0.0
+  contact:
+    name: Prabogo
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+tags:
+  - name: Internal Client Management
+    description: Service-to-service client lifecycle operations.
+  - name: Public
+    description: Public, client-authenticated endpoints.
+
+paths:
+  /internal/client-upsert:
+    post:
+      summary: Upsert clients
+      description: |
+        Creates or updates a batch of clients. A request body is expected to be
+        an array of client inputs. If a client already exists it is updated;
+        otherwise a new client is created. A bearer key is generated
+        automatically when one is not provided.
+      operationId: clientUpsert
+      tags:
+        - Internal Client Management
+      security:
+        - internalBearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Batch of clients to create or update.
+              type: array
+              items:
+                $ref: "#/components/schemas/ClientInput"
+            examples:
+              create:
+                summary: Create a client
+                value:
+                  - name: "acme"
+              update:
+                summary: Update an existing client
+                value:
+                  - id: 1
+                  - name: "acme"
+                  - bearer_key: "existing-bearer-key"
+      responses:
+        "200":
+          description: Clients were upserted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+              examples:
+                success:
+                  summary: Upsert succeeded
+                  value:
+                    success: true
+                    data:
+                      - id: 1
+                        name: "acme"
+                        bearer_key: "generated-bearer-key"
+                        created_at: "2026-08-10T10:00:00Z"
+                        updated_at: "2026-08-10T10:00:00Z"
+        "400":
+          description: The request body could not be parsed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+              examples:
+                badRequest:
+                  summary: Malformed body
+                  value:
+                    success: false
+                    error: "unexpected end of JSON input"
+        "401":
+          description: Missing or invalid internal bearer key.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorOnly"
+              examples:
+                unauthorized:
+                  summary: Unauthorized
+                  value:
+                    error: "Unauthorized"
+        "500":
+          description: An internal error occurred during the domain upsert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+              examples:
+                serverError:
+                  summary: Internal error
+                  value:
+                    success: false
+                    error: "http client upsert failed: <detail>"
+
+  /internal/client-find:
+    post:
+      summary: Find clients
+      description: |
+        Finds clients by an optional filter. The filter may contain `ids`,
+        `names`, and/or `bearer_keys`. An empty filter returns all clients.
+      operationId: clientFind
+      tags:
+        - Internal Client Management
+      security:
+        - internalBearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientFilter"
+            examples:
+              byIds:
+                summary: Find by IDs
+                value:
+                  ids: [1, 2]
+              byNames:
+                summary: Find by names
+                value:
+                  names: ["acme"]
+              byBearerKeys:
+                summary: Find by bearer keys
+                value:
+                  bearer_keys: ["key-1", "key-2"]
+              empty:
+                summary: Find all
+                value: {}
+      responses:
+        "200":
+          description: Clients matching the filter.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+              examples:
+                success:
+                  summary: Find succeeded
+                  value:
+                    success: true
+                    data:
+                      - id: 1
+                        name: "acme"
+                        bearer_key: "generated-bearer-key"
+                        created_at: "2026-08-10T10:00:00Z"
+                        updated_at: "2026-08-10T10:00:00Z"
+        "400":
+          description: The request body could not be parsed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+              examples:
+                badRequest:
+                  summary: Malformed body
+                  value:
+                    success: false
+                    error: "unexpected end of JSON input"
+        "401":
+          description: Missing or invalid internal bearer key.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorOnly"
+              examples:
+                unauthorized:
+                  summary: Unauthorized
+                  value:
+                    error: "Unauthorized"
+        "500":
+          description: An internal error occurred during the domain find.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+              examples:
+                serverError:
+                  summary: Internal error
+                  value:
+                    success: false
+                    error: "http client find by filter failed: <detail>"
+
+  /internal/client-delete:
+    delete:
+      summary: Delete clients
+      description: |
+        Deletes clients matching the provided filter. The filter may contain
+        `ids`, `names`, and/or `bearer_keys`.
+      operationId: clientDelete
+      tags:
+        - Internal Client Management
+      security:
+        - internalBearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientFilter"
+            examples:
+              byIds:
+                summary: Delete by IDs
+                value:
+                  ids: [1, 2]
+              byNames:
+                summary: Delete by names
+                value:
+                  names: ["acme"]
+              byBearerKeys:
+                summary: Delete by bearer keys
+                value:
+                  bearer_keys: ["key-1"]
+      responses:
+        "200":
+          description: Clients were deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+              examples:
+                success:
+                  summary: Delete succeeded
+                  value:
+                    success: true
+        "400":
+          description: The request body could not be parsed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+              examples:
+                badRequest:
+                  summary: Malformed body
+                  value:
+                    success: false
+                    error: "unexpected end of JSON input"
+        "401":
+          description: Missing or invalid internal bearer key.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorOnly"
+              examples:
+                unauthorized:
+                  summary: Unauthorized
+                  value:
+                    error: "Unauthorized"
+        "500":
+          description: An internal error occurred during the domain delete.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+              examples:
+                serverError:
+                  summary: Internal error
+                  value:
+                    success: false
+                    error: "http client delete by filter failed: <detail>"
+
+  /v1/ping:
+    get:
+      summary: Ping
+      description: |
+        Returns a liveness/readiness payload including the current core count,
+        CPU usage, and memory usage. Protected by client authentication.
+      operationId: ping
+      tags:
+        - Public
+      security:
+        - clientBearerAuth: []
+      responses:
+        "200":
+          description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PingResponse"
+              examples:
+                success:
+                  summary: Ping succeeded
+                  value:
+                    message: "pong"
+                    core:
+                      - core: "8 Core"
+                    cpu:
+                      - usage: "12.500000 %"
+                        busy: "12.500000 %"
+                        total: "100.000000 %"
+                    memory:
+                      - usage: "45.123456 %"
+                        total: "16384.000000 MB"
+                        free: "8192.000000 MB"
+                        buffer: "512.000000 MB"
+                        cached: "4096.000000 MB"
+        "401":
+          description: Missing or invalid client token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+              examples:
+                unauthorized:
+                  summary: Unauthorized
+                  value:
+                    success: false
+                    error: "Unauthorized"
+
+components:
+  securitySchemes:
+    internalBearerAuth:
+      type: http
+      scheme: bearer
+      description: >-
+        Bearer token provided by the `internalKey` variable and validated
+        against the `INTERNAL_KEY` environment variable. Used for `/internal`
+        endpoints.
+    clientBearerAuth:
+      type: http
+      scheme: bearer
+      description: >-
+        Bearer token provided by the `bearerKey` variable and validated against
+        stored client bearer keys, or against the configured Authentik JWKS URL
+        when `AUTH_DRIVER=jwt`. Used for `/v1` endpoints.
+
+  schemas:
+    ClientInput:
+      type: object
+      description: >
+        Input for creating or updating a client. `id` is only present when
+        updating an existing client. `name` is required. `bearer_key` is
+        optional and auto-generated when omitted.
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Client identifier. Present on update.
+          example: 1
+        name:
+          type: string
+          description: Client name.
+          example: "acme"
+        bearer_key:
+          type: string
+          description: Client bearer key. Auto-generated when omitted.
+          example: "generated-bearer-key"
+      required:
+        - name
+
+    Client:
+      type: object
+      description: A persisted client record.
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "acme"
+        bearer_key:
+          type: string
+          example: "generated-bearer-key"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-08-10T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-08-10T10:00:00Z"
+
+    ClientFilter:
+      type: object
+      description: |
+        Filter used to find or delete clients. All fields are optional. An empty
+        filter selects all clients.
+      properties:
+        ids:
+          type: array
+          description: Client IDs to match.
+          items:
+            type: integer
+            format: int64
+          example: [1, 2]
+        names:
+          type: array
+          description: Client names to match.
+          items:
+            type: string
+          example: ["acme"]
+        bearer_keys:
+          type: array
+          description: Client bearer keys to match.
+          items:
+            type: string
+          example: ["key-1"]
+
+    Response:
+      type: object
+      description: Standard envelope for client management endpoints.
+      properties:
+        success:
+          type: boolean
+          description: Whether the operation succeeded.
+          example: true
+        error:
+          type: string
+          description: Human-readable error message. Present only on failure.
+          example: "http client upsert failed: <detail>"
+        data:
+          description: Operation payload. Present on successful operations.
+          oneOf:
+            - type: array
+              items:
+                $ref: "#/components/schemas/Client"
+            - type: string
+              nullable: true
+
+    ErrorOnly:
+      type: object
+      description: Minimal error envelope returned by the internal auth middleware.
+      properties:
+        error:
+          type: string
+          example: "Unauthorized"
+      required:
+        - error
+
+    PingResponse:
+      type: object
+      description: Health check payload returned by the ping endpoint.
+      properties:
+        message:
+          type: string
+          example: "pong"
+        core:
+          type: array
+          items:
+            type: object
+            properties:
+              core:
+                type: string
+                example: "8 Core"
+        cpu:
+          type: array
+          items:
+            type: object
+            properties:
+              usage:
+                type: string
+                example: "12.500000 %"
+              busy:
+                type: string
+                example: "12.500000 %"
+              total:
+                type: string
+                example: "100.000000 %"
+        memory:
+          type: array
+          items:
+            type: object
+            properties:
+              usage:
+                type: string
+                example: "45.123456 %"
+              total:
+                type: string
+                example: "16384.000000 MB"
+              free:
+                type: string
+                example: "8192.000000 MB"
+              buffer:
+                type: string
+                example: "512.000000 MB"
+              cached:
+                type: string
+                example: "4096.000000 MB"

@@ -5,6 +5,7 @@
 package mock_outbound_port
 
 import (
+	context "context"
 	model "prabogo/internal/model"
 	reflect "reflect"
 
@@ -35,61 +36,61 @@ func (m *MockClientDatabasePort) EXPECT() *MockClientDatabasePortMockRecorder {
 }
 
 // DeleteByFilter mocks base method.
-func (m *MockClientDatabasePort) DeleteByFilter(filter model.ClientFilter) error {
+func (m *MockClientDatabasePort) DeleteByFilter(ctx context.Context, filter model.ClientFilter) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteByFilter", filter)
+	ret := m.ctrl.Call(m, "DeleteByFilter", ctx, filter)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteByFilter indicates an expected call of DeleteByFilter.
-func (mr *MockClientDatabasePortMockRecorder) DeleteByFilter(filter interface{}) *gomock.Call {
+func (mr *MockClientDatabasePortMockRecorder) DeleteByFilter(ctx, filter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByFilter", reflect.TypeOf((*MockClientDatabasePort)(nil).DeleteByFilter), filter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByFilter", reflect.TypeOf((*MockClientDatabasePort)(nil).DeleteByFilter), ctx, filter)
 }
 
 // FindByFilter mocks base method.
-func (m *MockClientDatabasePort) FindByFilter(filter model.ClientFilter, lock bool) ([]model.Client, error) {
+func (m *MockClientDatabasePort) FindByFilter(ctx context.Context, filter model.ClientFilter, lock bool) ([]model.Client, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByFilter", filter, lock)
+	ret := m.ctrl.Call(m, "FindByFilter", ctx, filter, lock)
 	ret0, _ := ret[0].([]model.Client)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindByFilter indicates an expected call of FindByFilter.
-func (mr *MockClientDatabasePortMockRecorder) FindByFilter(filter, lock interface{}) *gomock.Call {
+func (mr *MockClientDatabasePortMockRecorder) FindByFilter(ctx, filter, lock interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByFilter", reflect.TypeOf((*MockClientDatabasePort)(nil).FindByFilter), filter, lock)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByFilter", reflect.TypeOf((*MockClientDatabasePort)(nil).FindByFilter), ctx, filter, lock)
 }
 
 // IsExists mocks base method.
-func (m *MockClientDatabasePort) IsExists(bearerKey string) (bool, error) {
+func (m *MockClientDatabasePort) IsExists(ctx context.Context, bearerKey string) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsExists", bearerKey)
+	ret := m.ctrl.Call(m, "IsExists", ctx, bearerKey)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IsExists indicates an expected call of IsExists.
-func (mr *MockClientDatabasePortMockRecorder) IsExists(bearerKey interface{}) *gomock.Call {
+func (mr *MockClientDatabasePortMockRecorder) IsExists(ctx, bearerKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsExists", reflect.TypeOf((*MockClientDatabasePort)(nil).IsExists), bearerKey)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsExists", reflect.TypeOf((*MockClientDatabasePort)(nil).IsExists), ctx, bearerKey)
 }
 
 // Upsert mocks base method.
-func (m *MockClientDatabasePort) Upsert(datas []model.ClientInput) error {
+func (m *MockClientDatabasePort) Upsert(ctx context.Context, datas []model.ClientInput) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Upsert", datas)
+	ret := m.ctrl.Call(m, "Upsert", ctx, datas)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Upsert indicates an expected call of Upsert.
-func (mr *MockClientDatabasePortMockRecorder) Upsert(datas interface{}) *gomock.Call {
+func (mr *MockClientDatabasePortMockRecorder) Upsert(ctx, datas interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upsert", reflect.TypeOf((*MockClientDatabasePort)(nil).Upsert), datas)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upsert", reflect.TypeOf((*MockClientDatabasePort)(nil).Upsert), ctx, datas)
 }
 
 // MockClientMessagePort is a mock of ClientMessagePort interface.
@@ -116,17 +117,17 @@ func (m *MockClientMessagePort) EXPECT() *MockClientMessagePortMockRecorder {
 }
 
 // PublishUpsert mocks base method.
-func (m *MockClientMessagePort) PublishUpsert(datas []model.ClientInput) error {
+func (m *MockClientMessagePort) PublishUpsert(ctx context.Context, datas []model.ClientInput) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublishUpsert", datas)
+	ret := m.ctrl.Call(m, "PublishUpsert", ctx, datas)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PublishUpsert indicates an expected call of PublishUpsert.
-func (mr *MockClientMessagePortMockRecorder) PublishUpsert(datas interface{}) *gomock.Call {
+func (mr *MockClientMessagePortMockRecorder) PublishUpsert(ctx, datas interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishUpsert", reflect.TypeOf((*MockClientMessagePort)(nil).PublishUpsert), datas)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishUpsert", reflect.TypeOf((*MockClientMessagePort)(nil).PublishUpsert), ctx, datas)
 }
 
 // MockClientCachePort is a mock of ClientCachePort interface.
@@ -153,32 +154,32 @@ func (m *MockClientCachePort) EXPECT() *MockClientCachePortMockRecorder {
 }
 
 // Get mocks base method.
-func (m *MockClientCachePort) Get(bearerKey string) (model.Client, error) {
+func (m *MockClientCachePort) Get(ctx context.Context, bearerKey string) (model.Client, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", bearerKey)
+	ret := m.ctrl.Call(m, "Get", ctx, bearerKey)
 	ret0, _ := ret[0].(model.Client)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockClientCachePortMockRecorder) Get(bearerKey interface{}) *gomock.Call {
+func (mr *MockClientCachePortMockRecorder) Get(ctx, bearerKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockClientCachePort)(nil).Get), bearerKey)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockClientCachePort)(nil).Get), ctx, bearerKey)
 }
 
 // Set mocks base method.
-func (m *MockClientCachePort) Set(data model.Client) error {
+func (m *MockClientCachePort) Set(ctx context.Context, data model.Client) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Set", data)
+	ret := m.ctrl.Call(m, "Set", ctx, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Set indicates an expected call of Set.
-func (mr *MockClientCachePortMockRecorder) Set(data interface{}) *gomock.Call {
+func (mr *MockClientCachePortMockRecorder) Set(ctx, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockClientCachePort)(nil).Set), data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockClientCachePort)(nil).Set), ctx, data)
 }
 
 // MockClientWorkflowPort is a mock of ClientWorkflowPort interface.
@@ -205,15 +206,15 @@ func (m *MockClientWorkflowPort) EXPECT() *MockClientWorkflowPortMockRecorder {
 }
 
 // StartUpsert mocks base method.
-func (m *MockClientWorkflowPort) StartUpsert(data model.ClientInput) error {
+func (m *MockClientWorkflowPort) StartUpsert(ctx context.Context, data model.ClientInput) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartUpsert", data)
+	ret := m.ctrl.Call(m, "StartUpsert", ctx, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StartUpsert indicates an expected call of StartUpsert.
-func (mr *MockClientWorkflowPortMockRecorder) StartUpsert(data interface{}) *gomock.Call {
+func (mr *MockClientWorkflowPortMockRecorder) StartUpsert(ctx, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartUpsert", reflect.TypeOf((*MockClientWorkflowPort)(nil).StartUpsert), data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartUpsert", reflect.TypeOf((*MockClientWorkflowPort)(nil).StartUpsert), ctx, data)
 }

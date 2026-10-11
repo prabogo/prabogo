@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: Prabogo
+    orgId: 1
+    folder: Prabogo
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

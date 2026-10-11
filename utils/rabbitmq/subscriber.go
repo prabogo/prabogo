@@ -5,11 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 
 	"prabogo/utils/log"
+	"prabogo/utils/metrics"
 )
 
 type ExchangeKind string
@@ -54,7 +58,7 @@ type SubscriberConfig struct {
 	Queue        string
 	RouteKey     string
 	ExitCount    uint
-	Callback     func(msg []byte) bool
+	Callback     func(ctx context.Context, msg []byte) bool
 }
 
 func (c *SubscriberConfig) Validate() error {
@@ -152,7 +156,17 @@ func SubscriberWithConfig(cfg SubscriberConfig) error {
 	forever := make(chan struct{})
 	go func() {
 		for d := range msgs {
-			ack := cfg.Callback(d.Body)
+			msgCtx := extractTraceContext(context.Background(), d.Headers)
+			start := time.Now()
+			ack := cfg.Callback(msgCtx, d.Body)
+			metrics.RecordMessage(msgCtx, metrics.MessageRecord{
+				Exchange:  cfg.Exchange,
+				Queue:     cfg.Queue,
+				Operation: "receive",
+				Error:     !ack,
+				Duration:  time.Since(start).Seconds(),
+			})
+
 			if ack {
 				err = d.Ack(false)
 				if err != nil {
@@ -172,7 +186,17 @@ func SubscriberWithConfig(cfg SubscriberConfig) error {
 	return nil
 }
 
-func Subscriber(exchange string, exchangeKind ExchangeKind, queue, routeKey string, callback func(msg []byte) bool) error {
+func extractTraceContext(parent context.Context, headers amqp.Table) context.Context {
+	carrier := propagation.HeaderCarrier{}
+	for k, v := range headers {
+		if s, ok := v.(string); ok {
+			carrier.Set(k, s)
+		}
+	}
+	return otel.GetTextMapPropagator().Extract(parent, carrier)
+}
+
+func Subscriber(exchange string, exchangeKind ExchangeKind, queue, routeKey string, callback func(ctx context.Context, msg []byte) bool) error {
 	return SubscriberWithConfig(SubscriberConfig{
 		Exchange:     exchange,
 		ExchangeKind: exchangeKind,

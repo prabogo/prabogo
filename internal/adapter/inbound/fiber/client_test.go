@@ -75,8 +75,8 @@ func TestClientAdapter(t *testing.T) {
 
 		Convey("Upsert", func() {
 			Convey("Success", func() {
-				mockClientDatabasePort.EXPECT().Upsert(gomock.Any()).Return(nil).Times(1)
-				mockClientDatabasePort.EXPECT().FindByFilter(gomock.Any(), gomock.Any()).Return(outputs, nil).Times(1)
+				mockClientDatabasePort.EXPECT().Upsert(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+				mockClientDatabasePort.EXPECT().FindByFilter(gomock.Any(), gomock.Any(), gomock.Any()).Return(outputs, nil).Times(1)
 
 				body, _ := json.Marshal(inputs)
 				req := httptest.NewRequest(http.MethodPost, "/client-upsert", bytes.NewReader(body))
@@ -104,7 +104,7 @@ func TestClientAdapter(t *testing.T) {
 			})
 
 			Convey("Domain error", func() {
-				mockClientDatabasePort.EXPECT().Upsert(gomock.Any()).Return(errors.New("database error")).Times(1)
+				mockClientDatabasePort.EXPECT().Upsert(gomock.Any(), gomock.Any()).Return(errors.New("database error")).Times(1)
 
 				body, _ := json.Marshal(inputs)
 				req := httptest.NewRequest(http.MethodPost, "/client-upsert", bytes.NewReader(body))
@@ -119,7 +119,7 @@ func TestClientAdapter(t *testing.T) {
 
 		Convey("Find", func() {
 			Convey("Success", func() {
-				mockClientDatabasePort.EXPECT().FindByFilter(gomock.Any(), gomock.Any()).Return(outputs, nil).Times(1)
+				mockClientDatabasePort.EXPECT().FindByFilter(gomock.Any(), gomock.Any(), gomock.Any()).Return(outputs, nil).Times(1)
 
 				body, _ := json.Marshal(filter)
 				req := httptest.NewRequest(http.MethodPost, "/client-find", bytes.NewReader(body))
@@ -147,7 +147,7 @@ func TestClientAdapter(t *testing.T) {
 			})
 
 			Convey("Domain error", func() {
-				mockClientDatabasePort.EXPECT().FindByFilter(gomock.Any(), gomock.Any()).Return(nil, errors.New("error")).Times(1)
+				mockClientDatabasePort.EXPECT().FindByFilter(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("error")).Times(1)
 
 				body, _ := json.Marshal(filter)
 				req := httptest.NewRequest(http.MethodPost, "/client-find", bytes.NewReader(body))
@@ -162,7 +162,7 @@ func TestClientAdapter(t *testing.T) {
 
 		Convey("Delete", func() {
 			Convey("Success", func() {
-				mockClientDatabasePort.EXPECT().DeleteByFilter(gomock.Any()).Return(nil).Times(1)
+				mockClientDatabasePort.EXPECT().DeleteByFilter(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
 				body, _ := json.Marshal(filter)
 				req := httptest.NewRequest(http.MethodPost, "/client-delete", bytes.NewReader(body))
@@ -190,7 +190,7 @@ func TestClientAdapter(t *testing.T) {
 			})
 
 			Convey("Domain error", func() {
-				mockClientDatabasePort.EXPECT().DeleteByFilter(gomock.Any()).Return(errors.New("error")).Times(1)
+				mockClientDatabasePort.EXPECT().DeleteByFilter(gomock.Any(), gomock.Any()).Return(errors.New("error")).Times(1)
 
 				body, _ := json.Marshal(filter)
 				req := httptest.NewRequest(http.MethodPost, "/client-delete", bytes.NewReader(body))

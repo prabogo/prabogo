@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	authorizationHeader = "Authorization"
-	bearerPrefix        = "Bearer "
-	bearerPrefixLen     = 7
+	authorizationHeader    = "Authorization"
+	bearerPrefix           = "Bearer "
+	bearerPrefixLen        = 7
+	activityNameClientAuth = "http_client_auth"
 )
 
 type MiddlewareAdapter interface {
@@ -37,18 +38,18 @@ func NewMiddlewareAdapter(
 func (h *middlewareAdapter) InternalAuth(a any) error {
 	c := a.(*fiber.Ctx)
 	authHeader := c.Get(authorizationHeader)
-	var bearerToken string
+	var internalKey string
 	if len(authHeader) > bearerPrefixLen && authHeader[:bearerPrefixLen] == bearerPrefix {
-		bearerToken = authHeader[bearerPrefixLen:]
+		internalKey = authHeader[bearerPrefixLen:]
 	}
 
-	if bearerToken == "" {
+	if internalKey == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Unauthorized",
 		})
 	}
 
-	if bearerToken != os.Getenv("INTERNAL_KEY") {
+	if internalKey != os.Getenv("INTERNAL_KEY") {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Unauthorized",
 		})
@@ -59,14 +60,14 @@ func (h *middlewareAdapter) InternalAuth(a any) error {
 
 func (h *middlewareAdapter) ClientAuth(a any) error {
 	c := a.(*fiber.Ctx)
-	ctx := activity.NewContext("http_client_auth")
+	ctx := activity.NewContext(activityNameClientAuth)
 	authHeader := c.Get(authorizationHeader)
-	var bearerToken string
+	var bearerKey string
 	if len(authHeader) > bearerPrefixLen && authHeader[:bearerPrefixLen] == bearerPrefix {
-		bearerToken = authHeader[bearerPrefixLen:]
+		bearerKey = authHeader[bearerPrefixLen:]
 	}
 
-	if bearerToken == "" {
+	if bearerKey == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(model.Response{
 			Success: false,
 			Error:   "Unauthorized",
@@ -77,7 +78,7 @@ func (h *middlewareAdapter) ClientAuth(a any) error {
 	if authDriver == "jwt" {
 		jwksURL := os.Getenv("AUTH_JWKS_URL")
 
-		_, err := jwt.ValidateJWTWithURL(bearerToken, jwksURL)
+		_, err := jwt.ValidateJWTWithURL(bearerKey, jwksURL)
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(model.Response{
 				Success: false,
@@ -85,7 +86,7 @@ func (h *middlewareAdapter) ClientAuth(a any) error {
 			})
 		}
 	} else {
-		exists, err := h.domain.Client().IsExists(ctx, bearerToken)
+		exists, err := h.domain.Client().IsExists(ctx, bearerKey)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(model.Response{
 				Success: false,

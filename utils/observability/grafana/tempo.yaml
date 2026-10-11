@@ -1,0 +1,36 @@
+server:
+  http_listen_port: 3200
+  http_listen_address: 0.0.0.0
+  grpc_listen_port: 3201
+  grpc_listen_address: 0.0.0.0
+
+stream_over_http_enabled: true
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/blocks
+    wal:
+      path: /var/tempo/wal
+
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+  storage:
+    path: /var/tempo/metrics
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors: [service-graphs, span-metrics]

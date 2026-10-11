@@ -1,6 +1,10 @@
 package inbound_port
 
-import "prabogo/internal/model"
+import (
+	"context"
+
+	"prabogo/internal/model"
+)
 
 type ClientHttpPort interface {
 	Upsert(a any) error
@@ -9,7 +13,7 @@ type ClientHttpPort interface {
 }
 
 type ClientMessagePort interface {
-	Upsert(a any) bool
+	Upsert(ctx context.Context, a any) bool
 }
 
 type ClientCommandPort interface {

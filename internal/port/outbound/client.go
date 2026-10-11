@@ -1,24 +1,28 @@
 package outbound_port
 
-import "prabogo/internal/model"
+import (
+	"context"
+
+	"prabogo/internal/model"
+)
 
 //go:generate mockgen -source=client.go -destination=./../../../tests/mocks/port/mock_client.go
 type ClientDatabasePort interface {
-	Upsert(datas []model.ClientInput) error
-	FindByFilter(filter model.ClientFilter, lock bool) ([]model.Client, error)
-	DeleteByFilter(filter model.ClientFilter) error
-	IsExists(bearerKey string) (bool, error)
+	Upsert(ctx context.Context, datas []model.ClientInput) error
+	FindByFilter(ctx context.Context, filter model.ClientFilter, lock bool) ([]model.Client, error)
+	DeleteByFilter(ctx context.Context, filter model.ClientFilter) error
+	IsExists(ctx context.Context, bearerKey string) (bool, error)
 }
 
 type ClientMessagePort interface {
-	PublishUpsert(datas []model.ClientInput) error
+	PublishUpsert(ctx context.Context, datas []model.ClientInput) error
 }
 
 type ClientCachePort interface {
-	Set(data model.Client) error
-	Get(bearerKey string) (model.Client, error)
+	Set(ctx context.Context, data model.Client) error
+	Get(ctx context.Context, bearerKey string) (model.Client, error)
 }
 
 type ClientWorkflowPort interface {
-	StartUpsert(data model.ClientInput) error
+	StartUpsert(ctx context.Context, data model.ClientInput) error
 }

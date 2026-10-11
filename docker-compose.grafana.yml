@@ -1,0 +1,72 @@
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.118.0
+    command: ["--config=/etc/otelcol/config.yaml"]
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./utils/observability/grafana/otel-collector.yaml:/etc/otelcol/config.yaml:ro
+    depends_on:
+      - tempo
+      - mimir
+      - loki
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:3.7.0
+    ports:
+      - "3100:3100"
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes:
+      - loki_data:/loki
+    restart: unless-stopped
+
+  tempo:
+    image: grafana/tempo:3.0.0
+    ports:
+      - "3200:3200"
+      - "3201:3201"
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./utils/observability/grafana/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/var/tempo
+    restart: unless-stopped
+
+  mimir:
+    image: grafana/mimir:3.2.0
+    ports:
+      - "9009:8080"
+    command: ["-config.file=/etc/mimir.yaml"]
+    volumes:
+      - ./utils/observability/grafana/mimir.yaml:/etc/mimir.yaml:ro
+      - mimir_data:/data
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:13.2.0
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-changeme}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Viewer"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./utils/observability/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./utils/observability/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./utils/observability/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./utils/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - loki
+      - tempo
+      - mimir
+    restart: unless-stopped
+
+volumes:
+  loki_data:
+  tempo_data:
+  mimir_data:
+  grafana_data:

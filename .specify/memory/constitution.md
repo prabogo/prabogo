@@ -52,14 +52,60 @@ Unit tests for all domain logic MUST be written before or alongside implementati
 - Integration tests live in `tests/integration/` and require real infrastructure via Docker Compose.
 - Mock generation MUST use `golang/mock`; generated mocks live in `tests/mocks/port/`.
 
-### IV. Observability & Structured Logging
+### IV. Observability (Logs, Metrics & Traces) (NON-NEGOTIABLE)
 
-Every adapter and domain operation of significance MUST be observable:
+Every adapter and domain operation of significance MUST produce observable signals via the three
+pillars — **logs**, **metrics**, and **traces** — using OpenTelemetry (OTel) + the Grafana LGTM stack
+(Loki / Mimir / Tempo / Grafana). All three signals are emitted via OTLP gRPC to the collector
+(`OTEL_*_ENDPOINT`, default `localhost:4317`) and are individually gated by
+`OTEL_{TRACE,METRIC,LOG}_ENABLED=true`. OTel is bootstrapped once in `internal/app.go` via
+`otel_utils.Setup(ctx)`.
 
-- Structured logging is REQUIRED via the `utils/log/` package (logrus-based, with hook support).
-- Activity tracking for key operations MUST use `utils/activity/`.
+**Context flow (MANDATORY):** Every outbound port interface MUST accept `context.Context` as its
+first parameter, and the domain MUST pass `ctx` through every port call. A span that is built on
+`context.Background()` becomes an orphan in Tempo. The correct trace chain is:
+HTTP server span → domain span → DB/cache/message/workflow span, all under the same `trace_id`.
+Never lose the context across an adapter/domain boundary.
+
+**LOGS** (via `utils/log/`, logrus-based with OTel hook):
+
+- Structured, key/value logging is REQUIRED everywhere; never log free-form strings.
+- `ctx` MUST be propagated for logging: use `log.WithContext(ctx)` so the OTel hook links each log
+  entry to the current span. `WithContext()` extracts the span and emits `trace_id` and `span_id`
+  in Tempo's canonical hex form (leading zeros stripped via `strings.TrimLeft(..., "0")`) so a single
+  trace ID matches in BOTH Loki and Tempo.
+- Sensitive fields (bearer_key, password, token, authorization, etc.) MUST be masked via
+  `utils/masking` before logging.
 - Errors MUST be wrapped with context using `palantir/stacktrace` or `pkg/errors` before propagation.
 - No silent error swallowing — every caught error MUST be either handled or propagated with context.
+
+**METRICS** (via `utils/metrics/`, OTel):
+
+- HTTP: every Fiber handler is instrumented through the `observabilityMiddleware()` (in
+  `adapter/inbound/fiber/observability.go`) producing `prabogo_http_server_request_count` and
+  `prabogo_http_server_request_duration` tagged with `http_route`, `http_request_method`,
+  `http_response_status_code`, `error` (true when status >= 400). Record `trace_id` as a metric
+  attribute so Mimir exemplar dots link to Tempo.
+- Message consumers (RabbitMQ inbound) are CENTRALIZED in `utils/rabbitmq/subscriber.go`, which times
+  each delivery and records `prabogo_message_consumer_request_count` /
+  `prabogo_message_consumer_request_duration` from the callback's ack/nack. Consumers MUST NOT record
+  their own metrics; they return `bool` (true = ack) and the subscriber records them.
+- Use the centralized `metrics.Record*` helpers rather than creating private metric instances.
+
+**TRACES** (via `utils/tracing/`):
+
+- Every significant operation creates a span: server spans via the Fiber observability middleware,
+  domain spans in `internal/domain/`, and outbound spans via the shared helper functions
+  `StartDBSpan`, `StartCacheSpan`, `StartMessageSpan`.
+- Cross-service propagation is REQUIRED: outbound message publishers inject trace context into
+  `amqp.Publishing.Headers` (via `otel.GetTextMapPropagator().Inject`); inbound subscribers extract it
+  back and pass the extracted `context.Context` to the consumer callback.
+- The activity name and span name MUST use the SAME string constant (a `const` declared at the top of
+  the adapter file, named `activityNameXxx`), snake_case — e.g. `db_client_find_by_filter`. Inbound
+  adapters set both `activity.NewContext(<const>)` and `tracing.StartSpan(..., <const>)`; outbound
+  adapters set the span name only.
+- Span attributes preserve OTel semantics and semconv v1.26.0 naming — always verify constants with
+  `go doc` (e.g. `DBSystemPostgreSQL`, `MessagingSystemRabbitmq`) rather than guessing.
 
 ### V. Simplicity & Go Idioms
 
@@ -85,6 +131,10 @@ The following technology choices are locked for the current major version:
 | Cache            | Redis                | `adapter/outbound/redis/`       |
 | Migrations       | Goose v3             | `internal/migration/postgres/`  |
 | Auth tokens      | golang-jwt/jwt v5    | `utils/jwt/`                    |
+| Logs             | logrus + OTLP hook    | `utils/log/`, `utils/masking/`  |
+| Metrics          | OTel metrics          | `utils/metrics/`                |
+| Traces           | OTel tracing          | `utils/tracing/`, `utils/otel/` |
+| Observability UI | Grafana LGTM (Loki, Mimir, Tempo) | `utils/observability/grafana/`, `docker-compose.grafana.yml` |
 
 Replacing any technology MUST be done by creating a new adapter implementing the existing port interface.
 The port interface MUST NOT change for a replacement unless a minor or major version bump is warranted.
@@ -111,4 +161,4 @@ This constitution supersedes all informal coding conventions documented elsewher
 All PRs MUST pass the Constitution Check gate defined in the plan template before merging.
 Complexity deviations from Principle V MUST be documented in the plan's Complexity Tracking table.
 
-**Version**: 1.2.0 | **Ratified**: 2026-05-03 | **Last Amended**: 2026-05-24
+**Version**: 1.3.0 | **Ratified**: 2026-05-03 | **Last Amended**: 2026-08-13

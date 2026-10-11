@@ -29,6 +29,7 @@ import (
 	"prabogo/utils/database"
 	"prabogo/utils/log"
 	mcp_utils "prabogo/utils/mcp"
+	otel_utils "prabogo/utils/otel"
 	"prabogo/utils/rabbitmq"
 	"prabogo/utils/redis"
 )
@@ -49,15 +50,22 @@ var inboundWorkflowDriver string
 var inboundMcpTransport string
 
 type App struct {
-	ctx    context.Context
-	domain domain.Domain
+	ctx      context.Context
+	domain   domain.Domain
+	otelShut func(context.Context) error
 }
 
 func NewApp() *App {
 	ctx := activity.NewContext("init")
 	ctx = activity.WithClientID(ctx, "system")
 	_ = godotenv.Load(".env")
+
+	otelShutdown, err := otel_utils.Setup(ctx)
+	if err != nil {
+		log.WithContext(ctx).Warnf("failed to initialize opentelemetry: %v", err)
+	}
 	configureLogging()
+
 	outboundDatabaseDriver = os.Getenv("OUTBOUND_DATABASE_DRIVER")
 	outboundMessageDriver = os.Getenv("OUTBOUND_MESSAGE_DRIVER")
 	outboundCacheDriver = os.Getenv("OUTBOUND_CACHE_DRIVER")
@@ -75,8 +83,9 @@ func NewApp() *App {
 	)
 
 	return &App{
-		ctx:    ctx,
-		domain: domain,
+		ctx:      ctx,
+		domain:   domain,
+		otelShut: otelShutdown,
 	}
 }
 
@@ -194,6 +203,12 @@ func (a *App) httpInbound() {
 			if err := app.Shutdown(); err != nil {
 				log.WithContext(ctx).Errorf("failed to shutdown http server: %+v", err)
 			}
+
+			if a.otelShut != nil {
+				if err := a.otelShut(ctx); err != nil {
+					log.WithContext(ctx).Errorf("failed to shutdown opentelemetry: %+v", err)
+				}
+			}
 		}()
 
 		if err := app.Listen(":" + os.Getenv("SERVER_PORT")); err != nil {
@@ -222,6 +237,12 @@ func (a *App) commandInbound() {
 	ctx := a.ctx
 	inboundCommandAdapter := command_inbound_adapter.NewAdapter(a.domain)
 	command_inbound_adapter.InitRoute(ctx, os.Args, inboundCommandAdapter)
+
+	if a.otelShut != nil {
+		if err := a.otelShut(ctx); err != nil {
+			log.WithContext(ctx).Errorf("failed to shutdown opentelemetry: %+v", err)
+		}
+	}
 }
 
 func (a *App) workflowInbound() {
@@ -264,10 +285,14 @@ func (a *App) mcpInbound() {
 func configureLogging() {
 	logrus.SetLevel(logrus.DebugLevel)
 	logrus.AddHook(utils.LogrusSourceContextHook{})
+	// MaskingHook must be registered before any log-emitting hook so it can
+	// rewrite entry.Data in place before the stdout formatter runs and before
+	// the OTLP hook exports the record.
+	logrus.AddHook(log.NewMaskingHook())
 
-	if os.Getenv("APP_MODE") != "release" {
-		logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
-	} else {
-		logrus.SetFormatter(&joonix.FluentdFormatter{})
+	if os.Getenv("OTEL_LOG_ENABLED") == "true" {
+		logrus.AddHook(log.NewOTelLogrusHook())
 	}
+
+	logrus.SetFormatter(&joonix.FluentdFormatter{})
 }

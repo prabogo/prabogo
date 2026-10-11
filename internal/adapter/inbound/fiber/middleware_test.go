@@ -129,7 +129,7 @@ func TestMiddlewareAdapter(t *testing.T) {
 			})
 
 			Convey("Client exists in cache", func() {
-				mockClientCachePort.EXPECT().Get(gomock.Any()).Return(clientOutput, nil).Times(1)
+				mockClientCachePort.EXPECT().Get(gomock.Any(), gomock.Any()).Return(clientOutput, nil).Times(1)
 
 				req := httptest.NewRequest(http.MethodGet, "/test", nil)
 				req.Header.Set("Authorization", "Bearer valid-client-key")
@@ -140,10 +140,10 @@ func TestMiddlewareAdapter(t *testing.T) {
 			})
 
 			Convey("Client exists in database (cache miss)", func() {
-				mockClientCachePort.EXPECT().Get(gomock.Any()).Return(model.Client{}, redis.Nil).Times(1)
-				mockClientDatabasePort.EXPECT().IsExists(gomock.Any()).Return(true, nil).Times(1)
-				mockClientDatabasePort.EXPECT().FindByFilter(gomock.Any(), gomock.Any()).Return([]model.Client{clientOutput}, nil).Times(1)
-				mockClientCachePort.EXPECT().Set(gomock.Any()).Return(nil).Times(1)
+				mockClientCachePort.EXPECT().Get(gomock.Any(), gomock.Any()).Return(model.Client{}, redis.Nil).Times(1)
+				mockClientDatabasePort.EXPECT().IsExists(gomock.Any(), gomock.Any()).Return(true, nil).Times(1)
+				mockClientDatabasePort.EXPECT().FindByFilter(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Client{clientOutput}, nil).Times(1)
+				mockClientCachePort.EXPECT().Set(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
 				req := httptest.NewRequest(http.MethodGet, "/test", nil)
 				req.Header.Set("Authorization", "Bearer valid-client-key")
@@ -154,8 +154,8 @@ func TestMiddlewareAdapter(t *testing.T) {
 			})
 
 			Convey("Client does not exist", func() {
-				mockClientCachePort.EXPECT().Get(gomock.Any()).Return(model.Client{}, redis.Nil).Times(1)
-				mockClientDatabasePort.EXPECT().IsExists(gomock.Any()).Return(false, nil).Times(1)
+				mockClientCachePort.EXPECT().Get(gomock.Any(), gomock.Any()).Return(model.Client{}, redis.Nil).Times(1)
+				mockClientDatabasePort.EXPECT().IsExists(gomock.Any(), gomock.Any()).Return(false, nil).Times(1)
 
 				req := httptest.NewRequest(http.MethodGet, "/test", nil)
 				req.Header.Set("Authorization", "Bearer nonexistent-key")
