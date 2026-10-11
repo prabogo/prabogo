@@ -110,7 +110,7 @@ func TestExtractTraceContextNonStringHeaders(t *testing.T) {
 	))
 
 	headers := amqp.Table{
-		"traceparent": 123, // non-string, should be skipped
+		"traceparent": 123,             // non-string, should be skipped
 		"other":       []byte("bytes"), // non-string, should be skipped
 	}
 

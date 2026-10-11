@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -29,27 +28,26 @@ var (
 	rabbitConn *amqp.Connection
 )
 
-func getUrl() string {
-	return fmt.Sprintf(
-		"amqp://%s:%s@%s:%s/%s",
-		os.Getenv("MESSAGE_USER"),
-		os.Getenv("MESSAGE_PASSWORD"),
-		os.Getenv("MESSAGE_HOST"),
-		os.Getenv("MESSAGE_PORT"),
-		os.Getenv("MESSAGE_VHOST"),
-	)
-}
-
 func InitMessage() error {
 	if rabbitConn != nil && !rabbitConn.IsClosed() {
 		return nil
 	}
-	conn, err := amqp.Dial(getUrl())
+	conn, err := dial()
 	if err != nil {
 		return err
 	}
 	rabbitConn = conn
 	return nil
+}
+
+func CloseMessage() error {
+	if rabbitConn == nil || rabbitConn.IsClosed() {
+		rabbitConn = nil
+		return nil
+	}
+	err := rabbitConn.Close()
+	rabbitConn = nil
+	return err
 }
 
 type SubscriberConfig struct {
@@ -58,7 +56,14 @@ type SubscriberConfig struct {
 	Queue        string
 	RouteKey     string
 	ExitCount    uint
-	Callback     func(ctx context.Context, msg []byte) bool
+
+	// Zero selects the package default; negative is invalid.
+	PrefetchCount int
+	PrefetchSize  int
+	// Zero selects DefaultMaxBodyBytes, negative disables the check.
+	MaxBodyBytes int64
+
+	Callback func(ctx context.Context, msg []byte) bool
 }
 
 func (c *SubscriberConfig) Validate() error {
@@ -74,7 +79,33 @@ func (c *SubscriberConfig) Validate() error {
 	if c.Callback == nil {
 		return errors.New("subscriber callback empty")
 	}
+	if err := validatePrefetch(c.PrefetchCount, c.PrefetchSize); err != nil {
+		return fmt.Errorf("subscriber %w", err)
+	}
+	if c.MaxBodyBytes < -1 {
+		return errors.New("subscriber max body bytes must be >= -1")
+	}
 	return nil
+}
+
+// prefetchCount returns the effective QoS count.
+func (c *SubscriberConfig) prefetchCount() int {
+	if c.PrefetchCount == 0 {
+		return DefaultPrefetchCount
+	}
+	return c.PrefetchCount
+}
+
+// maxBodyLimit returns the effective body limit; 0 means unlimited.
+func (c *SubscriberConfig) maxBodyLimit() int64 {
+	switch {
+	case c.MaxBodyBytes < 0:
+		return 0
+	case c.MaxBodyBytes == 0:
+		return DefaultMaxBodyBytes
+	default:
+		return c.MaxBodyBytes
+	}
 }
 
 func SubscriberWithConfig(cfg SubscriberConfig) error {
@@ -83,7 +114,7 @@ func SubscriberWithConfig(cfg SubscriberConfig) error {
 		return err
 	}
 
-	fmt.Printf("rabbitmq subscriber config: %+v\n", cfg)
+	fmt.Printf("rabbitmq subscriber config: exchange=%q queue=%q routeKey=%q\n", cfg.Exchange, cfg.Queue, cfg.RouteKey)
 	ctx := context.Background()
 
 	if rabbitConn == nil || rabbitConn.IsClosed() {
@@ -102,6 +133,11 @@ func SubscriberWithConfig(cfg SubscriberConfig) error {
 			err = errClose
 		}
 	}()
+
+	err = ch.Qos(cfg.prefetchCount(), cfg.PrefetchSize, false)
+	if err != nil {
+		return err
+	}
 
 	err = ch.ExchangeDeclare(
 		cfg.Exchange,
@@ -155,7 +191,19 @@ func SubscriberWithConfig(cfg SubscriberConfig) error {
 
 	forever := make(chan struct{})
 	go func() {
+		maxBody := cfg.maxBodyLimit()
 		for d := range msgs {
+			if maxBody > 0 && int64(len(d.Body)) > maxBody {
+				log.WithContext(ctx).Errorf(
+					"dropping message on queue '%s' exceeding max body size: %d bytes > %d bytes (delivery tag %d)",
+					cfg.Queue, len(d.Body), maxBody, d.DeliveryTag,
+				)
+				if nackErr := d.Nack(false, false); nackErr != nil {
+					log.WithContext(ctx).Errorf("failed to nack oversized message: %s", nackErr)
+				}
+				continue
+			}
+
 			msgCtx := extractTraceContext(context.Background(), d.Headers)
 			start := time.Now()
 			ack := cfg.Callback(msgCtx, d.Body)
@@ -170,13 +218,13 @@ func SubscriberWithConfig(cfg SubscriberConfig) error {
 			if ack {
 				err = d.Ack(false)
 				if err != nil {
-					log.WithContext(context.Background()).Errorf("failed to ack message with body %s: %s", string(d.Body), err)
+					log.WithContext(ctx).Errorf("failed to ack message on queue '%s' (delivery tag %d): %s", cfg.Queue, d.DeliveryTag, err)
 				}
 
 			} else {
 				err = d.Nack(false, true)
 				if err != nil {
-					log.WithContext(context.Background()).Errorf("failed to nack message with body %s: %s", string(d.Body), err)
+					log.WithContext(ctx).Errorf("failed to nack message on queue '%s' (delivery tag %d): %s", cfg.Queue, d.DeliveryTag, err)
 				}
 			}
 		}
