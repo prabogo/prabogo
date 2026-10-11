@@ -21,8 +21,8 @@ type clientActivity struct {
 }
 
 const (
-	tracerNameActivity     = "inbound.workflow"
-	activityNameUpsert     = "workflow_client_upsert_activity"
+	tracerNameActivity = "inbound.workflow"
+	activityNameUpsert = "workflow_client_upsert_activity"
 )
 
 func NewClientActivity(

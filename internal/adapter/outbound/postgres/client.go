@@ -54,7 +54,7 @@ func (adapter *clientAdapter) Upsert(ctx context.Context, datas []model.ClientIn
 	}
 
 	query += ` ON CONFLICT (bearer_key) DO UPDATE SET name = EXCLUDED.name, updated_at = EXCLUDED.updated_at`
-	_, err = adapter.db.Exec(query)
+	_, err = adapter.db.ExecContext(ctx, query)
 	if err != nil {
 		tracing.RecordError(span, err)
 		return err
@@ -85,7 +85,7 @@ func (adapter *clientAdapter) FindByFilter(ctx context.Context, filter model.Cli
 		query += " FOR UPDATE"
 	}
 
-	res, err := adapter.db.Query(query)
+	res, err := adapter.db.QueryContext(ctx, query)
 	if err != nil {
 		tracing.RecordError(span, err)
 		return nil, err
@@ -131,7 +131,7 @@ func (adapter *clientAdapter) DeleteByFilter(ctx context.Context, filter model.C
 		return err
 	}
 
-	_, err = adapter.db.Exec(query)
+	_, err = adapter.db.ExecContext(ctx, query)
 	if err != nil {
 		tracing.RecordError(span, err)
 		return err
@@ -156,10 +156,10 @@ func (adapter *clientAdapter) IsExists(ctx context.Context, bearerKey string) (b
 		return false, err
 	}
 
-	// Use QueryRow instead of Query: an existence check needs at most one row,
-	// and QueryRow avoids allocating a *sql.Rows cursor.
+	// Use QueryRowContext instead of QueryContext: an existence check needs at
+	// most one row, and it avoids allocating a *sql.Rows cursor.
 	var id int
-	err = adapter.db.QueryRow(query).Scan(&id)
+	err = adapter.db.QueryRowContext(ctx, query).Scan(&id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return false, nil

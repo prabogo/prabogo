@@ -78,12 +78,12 @@ func TestClientIntegration(t *testing.T) {
 			}
 
 			Convey("Upsert creates a new client", func() {
-				err := adapter.Upsert([]model.ClientInput{input})
+				err := adapter.Upsert(ctx, []model.ClientInput{input})
 				So(err, ShouldBeNil)
 
 				Convey("FindByFilter retrieves the client", func() {
 					filter := model.ClientFilter{BearerKeys: []string{bearerKey}}
-					results, err := adapter.FindByFilter(filter, false)
+					results, err := adapter.FindByFilter(ctx, filter, false)
 					So(err, ShouldBeNil)
 					So(len(results), ShouldEqual, 1)
 					So(results[0].Name, ShouldEqual, "Integration Test Client")
@@ -91,7 +91,7 @@ func TestClientIntegration(t *testing.T) {
 				})
 
 				Convey("IsExists returns true for existing client", func() {
-					exists, err := adapter.IsExists(bearerKey)
+					exists, err := adapter.IsExists(ctx, bearerKey)
 					So(err, ShouldBeNil)
 					So(exists, ShouldBeTrue)
 				})
@@ -103,11 +103,11 @@ func TestClientIntegration(t *testing.T) {
 						CreatedAt: input.CreatedAt,
 						UpdatedAt: time.Now(),
 					}
-					err := adapter.Upsert([]model.ClientInput{updatedInput})
+					err := adapter.Upsert(ctx, []model.ClientInput{updatedInput})
 					So(err, ShouldBeNil)
 
 					filter := model.ClientFilter{BearerKeys: []string{bearerKey}}
-					results, err := adapter.FindByFilter(filter, false)
+					results, err := adapter.FindByFilter(ctx, filter, false)
 					So(err, ShouldBeNil)
 					So(len(results), ShouldEqual, 1)
 					So(results[0].Name, ShouldEqual, "Updated Client Name")
@@ -115,10 +115,10 @@ func TestClientIntegration(t *testing.T) {
 
 				Convey("DeleteByFilter removes the client", func() {
 					filter := model.ClientFilter{BearerKeys: []string{bearerKey}}
-					err := adapter.DeleteByFilter(filter)
+					err := adapter.DeleteByFilter(ctx, filter)
 					So(err, ShouldBeNil)
 
-					exists, err := adapter.IsExists(bearerKey)
+					exists, err := adapter.IsExists(ctx, bearerKey)
 					So(err, ShouldBeNil)
 					So(exists, ShouldBeFalse)
 				})
@@ -126,7 +126,7 @@ func TestClientIntegration(t *testing.T) {
 		})
 
 		Convey("IsExists returns false for non-existent client", func() {
-			exists, err := adapter.IsExists("nonexistent-key-" + time.Now().Format("20060102150405"))
+			exists, err := adapter.IsExists(ctx, "nonexistent-key-"+time.Now().Format("20060102150405"))
 			So(err, ShouldBeNil)
 			So(exists, ShouldBeFalse)
 		})
@@ -138,11 +138,11 @@ func TestClientIntegration(t *testing.T) {
 				{Name: "Client B", BearerKey: "key-b-" + now.Format("150405.000"), CreatedAt: now, UpdatedAt: now},
 			}
 
-			err := adapter.Upsert(clients)
+			err := adapter.Upsert(ctx, clients)
 			So(err, ShouldBeNil)
 
 			filter := model.ClientFilter{Names: []string{"Client A", "Client B"}}
-			results, err := adapter.FindByFilter(filter, false)
+			results, err := adapter.FindByFilter(ctx, filter, false)
 			So(err, ShouldBeNil)
 			So(len(results), ShouldBeGreaterThanOrEqualTo, 2)
 		})

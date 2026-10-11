@@ -17,7 +17,7 @@ type clientAdapter struct {
 }
 
 const (
-	tracerNameWorker   = "inbound.workflow"
+	tracerNameWorker        = "inbound.workflow"
 	activityNameStartWorker = "upsert_client_worker"
 )
 

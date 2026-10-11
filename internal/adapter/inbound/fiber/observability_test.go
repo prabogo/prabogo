@@ -41,6 +41,7 @@ func TestObservabilityMiddlewareRouteLabel(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/v1/ping", nil)
 		resp, err := app.Test(req)
 		So(err, ShouldBeNil)
+		defer resp.Body.Close()
 		So(resp.StatusCode, ShouldEqual, http.StatusUnauthorized)
 
 		assertRecordedRoute(t, reader, "/v1/ping")
