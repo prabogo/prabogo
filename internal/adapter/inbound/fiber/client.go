@@ -2,10 +2,8 @@ package fiber_inbound_adapter
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/palantir/stacktrace"
 
 	"prabogo/internal/domain"
 	"prabogo/internal/model"
@@ -53,7 +51,7 @@ func (h *clientAdapter) Upsert(a any) error {
 		log.WithContext(ctx).Errorf("http client upsert failed: %s", stacktrace.RootCause(err).Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{
 			Success: false,
-			Error:   fmt.Sprintf("http client upsert failed: %s", stacktrace.RootCause(err).Error()),
+			Error:   "Internal Server Error",
 		})
 	}
 
@@ -86,7 +84,7 @@ func (h *clientAdapter) Find(a any) error {
 		log.WithContext(ctx).Errorf("http client find by filter failed: %s", stacktrace.RootCause(err).Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{
 			Success: false,
-			Error:   fmt.Sprintf("http client find by filter failed: %s", stacktrace.RootCause(err).Error()),
+			Error:   "Internal Server Error",
 		})
 	}
 
@@ -118,7 +116,7 @@ func (h *clientAdapter) Delete(a any) error {
 		addSpanAttribute(c, "error.message", stacktrace.RootCause(err).Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{
 			Success: false,
-			Error:   fmt.Sprintf("http client delete by filter failed: %s", stacktrace.RootCause(err).Error()),
+			Error:   "Internal Server Error",
 		})
 	}
 
