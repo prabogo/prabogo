@@ -114,7 +114,7 @@ Prabogo MUST remain a lean, idiomatic Go framework:
 - YAGNI: implement only what is required by the current spec. No speculative abstractions.
 - Follow standard Go naming conventions: `camelCase` for unexported, `PascalCase` for exported symbols.
 - `prabogo-cli` commands MUST be used for code generation, testing, and build automation.
-- Go version MUST be >= 1.25.0 as declared in `go.mod`.
+- Go version MUST be >= 1.26.0 as declared in `go.mod`.
 - Dependencies MUST be justified; avoid adding transitive complexity without clear benefit.
 
 ## Architecture Standards

@@ -16,7 +16,7 @@ Prabogo now uses [Spec Kit](https://github.com/github/spec-kit) to bring spec-dr
 
 ## Requirement
 
-1. go version >= go1.25.0
+1. go version >= go1.26.0
 
 ## Spec Kit
 
