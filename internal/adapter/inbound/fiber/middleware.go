@@ -59,7 +59,7 @@ func (h *middlewareAdapter) InternalAuth(a any) error {
 		})
 	}
 
-	if subtle.ConstantTimeCompare([]byte(bearerToken), []byte(expectedKey)) != 1 {
+	if subtle.ConstantTimeCompare([]byte(internalKey), []byte(expectedKey)) != 1 {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Unauthorized",
 		})

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/palantir/stacktrace"
 
 	"prabogo/internal/domain"
 	"prabogo/internal/model"
@@ -114,6 +115,7 @@ func (h *clientAdapter) Delete(a any) error {
 	err := h.domain.Client().DeleteByFilter(ctx, payload)
 	if err != nil {
 		addSpanAttribute(c, "error.message", stacktrace.RootCause(err).Error())
+		log.WithContext(ctx).Errorf("http client delete by filter failed: %s", stacktrace.RootCause(err).Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{
 			Success: false,
 			Error:   "Internal Server Error",
