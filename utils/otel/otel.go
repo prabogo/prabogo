@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/metric"
@@ -137,7 +136,7 @@ func Setup(ctx context.Context) (func(context.Context) error, error) {
 				log.WithProcessor(log.NewBatchProcessor(logExporter)),
 				log.WithResource(res),
 			)
-			global.SetLoggerProvider(lp)
+			otel.SetLoggerProvider(lp)
 			shutdownFuncs = append(shutdownFuncs, lp.Shutdown)
 		}
 	}
