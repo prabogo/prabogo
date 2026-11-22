@@ -1,3 +1,5 @@
+name: prabogo
+
 services:
   redis:
     image: redis:7-alpine

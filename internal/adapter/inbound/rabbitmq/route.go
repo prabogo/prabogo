@@ -26,8 +26,8 @@ func InitRoute(
 					rabbitmq.KindFanOut,
 					os.Getenv("UPSERT_CLIENT_MESSAGE_SUBSCRIBE"),
 					"",
-					func(msg []byte) bool {
-						return port.Client().Upsert(msg)
+					func(ctx context.Context, msg []byte) bool {
+						return port.Client().Upsert(ctx, msg)
 					},
 				)
 				if err != nil {

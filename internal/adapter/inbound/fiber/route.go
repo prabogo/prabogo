@@ -13,6 +13,8 @@ func InitRoute(
 	app *fiber.App,
 	port inbound_port.HttpPort,
 ) {
+	app.Use(observabilityMiddleware())
+
 	internal := app.Group("/internal")
 	internal.Use(func(c *fiber.Ctx) error {
 		return port.Middleware().InternalAuth(c)

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 //go:generate mockgen -source=publisher.go -destination=./../../tests/mocks/mock_utils/mock_rabbitmq/mock_publisher.go
@@ -28,7 +30,15 @@ func Publish(ctx context.Context, exchange string, exchangeKind ExchangeKind, ro
 		return err
 	}
 
-	// Use global connection from InitMessage (singleton)
+	headers := amqp.Table{}
+	carrier := propagation.HeaderCarrier{}
+	otel.GetTextMapPropagator().Inject(ctx, carrier)
+	for k, values := range carrier {
+		if len(values) > 0 {
+			headers[k] = values[0]
+		}
+	}
+
 	if initErr := InitMessage(); initErr != nil {
 		return initErr
 	}
@@ -65,6 +75,7 @@ func Publish(ctx context.Context, exchange string, exchangeKind ExchangeKind, ro
 		false,
 		amqp.Publishing{
 			ContentType: "application/json",
+			Headers:     headers,
 			Body:        msgBytes,
 		})
 	if err != nil {

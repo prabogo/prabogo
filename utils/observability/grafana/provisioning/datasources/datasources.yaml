@@ -1,0 +1,69 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    uid: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://mimir:8080/prometheus
+    isDefault: true
+    editable: true
+    jsonData:
+      timeInterval: 15s
+      exemplarTraceIdLabel: trace_id
+
+  - name: Loki
+    uid: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    isDefault: false
+    editable: true
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        - name: traceid
+          matcherRegex: "\"traceid\":\"(\\w+)\""
+          url: "$${__value.raw}"
+          datasourceUid: Tempo
+          urlDisplayLabel: "View Trace"
+
+  - name: Tempo
+    uid: Tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    isDefault: false
+    editable: true
+    jsonData:
+      search:
+        search: true
+      streamingEnabled:
+        search: false
+      tracesToLogsV2:
+        datasourceUid: Loki
+        filterByTraceID: false
+        filterBySpanID: false
+        tags: [{ key: 'service.name', value: 'service_name' }]
+        spanStartTimeShift: -1h
+        spanEndTimeShift: 1h
+        customQuery: true
+        query: '{$${__tags}} | json | traceid="$${__span.traceId}"'
+      tracesToMetrics:
+        datasourceUid: Prometheus
+        tags: [{ key: 'service.name', value: 'job' }]
+        spanStartTimeShift: -5m
+        spanEndTimeShift: 5m
+        queries:
+          - name: HTTP Request rate
+            query: 'rate(prabogo_http_server_request_count{$${__tags}}[5m])'
+          - name: HTTP P95 latency
+            query: 'histogram_quantile(0.95, sum(rate(prabogo_http_server_request_duration_bucket{$${__tags}}[5m])) by (le))'
+          - name: HTTP Error rate
+            query: 'rate(prabogo_http_server_request_count{$${__tags}, error="true"}[5m])'
+          - name: Message consume rate
+            query: 'rate(prabogo_message_consumer_request_count{$${__tags}}[5m])'
+          - name: Message P95 latency
+            query: 'histogram_quantile(0.95, sum(rate(prabogo_message_consumer_request_duration_bucket{$${__tags}}[5m])) by (le))'
+          - name: Message error rate
+            query: 'rate(prabogo_message_consumer_request_count{$${__tags}, error="true"}[5m])'

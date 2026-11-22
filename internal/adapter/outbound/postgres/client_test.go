@@ -1,6 +1,7 @@
 package postgres_outbound_adapter_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -38,7 +39,7 @@ func TestClientAdapter(t *testing.T) {
 				mock.ExpectExec("INSERT INTO \"clients\"").
 					WillReturnResult(sqlmock.NewResult(1, 1))
 
-				err := adapter.Upsert(inputs)
+				err := adapter.Upsert(context.Background(), inputs)
 				So(err, ShouldBeNil)
 				So(mock.ExpectationsWereMet(), ShouldBeNil)
 			})
@@ -47,7 +48,7 @@ func TestClientAdapter(t *testing.T) {
 				mock.ExpectExec("INSERT INTO \"clients\"").
 					WillReturnError(sqlmock.ErrCancelled)
 
-				err := adapter.Upsert(inputs)
+				err := adapter.Upsert(context.Background(), inputs)
 				So(err, ShouldNotBeNil)
 			})
 		})
@@ -60,7 +61,7 @@ func TestClientAdapter(t *testing.T) {
 				mock.ExpectQuery("SELECT \\* FROM \"clients\"").
 					WillReturnRows(rows)
 
-				results, err := adapter.FindByFilter(filter, false)
+				results, err := adapter.FindByFilter(context.Background(), filter, false)
 				So(err, ShouldBeNil)
 				So(len(results), ShouldEqual, 1)
 				So(results[0].Name, ShouldEqual, "Test Client")
@@ -74,7 +75,7 @@ func TestClientAdapter(t *testing.T) {
 				mock.ExpectQuery("SELECT \\* FROM \"clients\"").
 					WillReturnRows(rows)
 
-				results, err := adapter.FindByFilter(filter, true)
+				results, err := adapter.FindByFilter(context.Background(), filter, true)
 				So(err, ShouldBeNil)
 				So(len(results), ShouldEqual, 1)
 				So(mock.ExpectationsWereMet(), ShouldBeNil)
@@ -84,7 +85,7 @@ func TestClientAdapter(t *testing.T) {
 				mock.ExpectQuery("SELECT \\* FROM \"clients\"").
 					WillReturnError(sqlmock.ErrCancelled)
 
-				_, err := adapter.FindByFilter(filter, false)
+				_, err := adapter.FindByFilter(context.Background(), filter, false)
 				So(err, ShouldNotBeNil)
 			})
 
@@ -94,7 +95,7 @@ func TestClientAdapter(t *testing.T) {
 				mock.ExpectQuery("SELECT \\* FROM \"clients\"").
 					WillReturnRows(rows)
 
-				results, err := adapter.FindByFilter(filter, false)
+				results, err := adapter.FindByFilter(context.Background(), filter, false)
 				So(err, ShouldBeNil)
 				So(len(results), ShouldEqual, 0)
 			})
@@ -102,20 +103,19 @@ func TestClientAdapter(t *testing.T) {
 
 		Convey("DeleteByFilter", func() {
 			Convey("Success", func() {
-				rows := sqlmock.NewRows([]string{})
-				mock.ExpectQuery("DELETE FROM \"clients\"").
-					WillReturnRows(rows)
+				mock.ExpectExec("DELETE FROM \"clients\"").
+					WillReturnResult(sqlmock.NewResult(0, 1))
 
-				err := adapter.DeleteByFilter(filter)
+				err := adapter.DeleteByFilter(context.Background(), filter)
 				So(err, ShouldBeNil)
 				So(mock.ExpectationsWereMet(), ShouldBeNil)
 			})
 
-			Convey("Query error", func() {
-				mock.ExpectQuery("DELETE FROM \"clients\"").
+			Convey("Exec error", func() {
+				mock.ExpectExec("DELETE FROM \"clients\"").
 					WillReturnError(sqlmock.ErrCancelled)
 
-				err := adapter.DeleteByFilter(filter)
+				err := adapter.DeleteByFilter(context.Background(), filter)
 				So(err, ShouldNotBeNil)
 			})
 		})
@@ -126,7 +126,7 @@ func TestClientAdapter(t *testing.T) {
 				mock.ExpectQuery("SELECT \"id\" FROM \"clients\"").
 					WillReturnRows(rows)
 
-				exists, err := adapter.IsExists("test-key")
+				exists, err := adapter.IsExists(context.Background(), "test-key")
 				So(err, ShouldBeNil)
 				So(exists, ShouldBeTrue)
 				So(mock.ExpectationsWereMet(), ShouldBeNil)
@@ -137,7 +137,7 @@ func TestClientAdapter(t *testing.T) {
 				mock.ExpectQuery("SELECT \"id\" FROM \"clients\"").
 					WillReturnRows(rows)
 
-				exists, err := adapter.IsExists("nonexistent")
+				exists, err := adapter.IsExists(context.Background(), "nonexistent")
 				So(err, ShouldBeNil)
 				So(exists, ShouldBeFalse)
 			})
@@ -146,7 +146,7 @@ func TestClientAdapter(t *testing.T) {
 				mock.ExpectQuery("SELECT \"id\" FROM \"clients\"").
 					WillReturnError(sqlmock.ErrCancelled)
 
-				_, err := adapter.IsExists("test-key")
+				_, err := adapter.IsExists(context.Background(), "test-key")
 				So(err, ShouldNotBeNil)
 			})
 		})

@@ -47,7 +47,7 @@ func TestClientAdapter(t *testing.T) {
 		}
 
 		Convey("Find success with value payload", func() {
-			mockClientDatabasePort.EXPECT().FindByFilter(gomock.Any(), false).Return(outputs, nil).Times(1)
+			mockClientDatabasePort.EXPECT().FindByFilter(gomock.Any(), gomock.Any(), false).Return(outputs, nil).Times(1)
 
 			result, err := adapter.Client().Find(filter)
 			So(err, ShouldBeNil)
@@ -67,7 +67,7 @@ func TestClientAdapter(t *testing.T) {
 		})
 
 		Convey("Find domain error", func() {
-			mockClientDatabasePort.EXPECT().FindByFilter(gomock.Any(), false).Return(nil, errors.New("database error")).Times(1)
+			mockClientDatabasePort.EXPECT().FindByFilter(gomock.Any(), gomock.Any(), false).Return(nil, errors.New("database error")).Times(1)
 
 			result, err := adapter.Client().Find(filter)
 			So(err, ShouldNotBeNil)

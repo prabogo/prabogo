@@ -120,47 +120,169 @@ cp .env.example .env
 cp .env.docker.example .env.docker
 ```
 
-## Start External Services with Docker Compose
+## Running Services with Docker Compose
+
+Prabogo groups its external dependencies into separate Docker Compose files so
+you can start only what you need. Before using any of them, make sure your
+environment file is ready:
+
+```sh
+cp .env.docker.example .env.docker
+```
+
+Then edit `.env.docker` and replace the `REPLACE_WITH_*` values with secure
+ones (e.g. `openssl rand -hex 32` for secret keys).
+
+> **Note:** Use `docker compose` (V2) or `docker-compose` (V1). Both are
+> shown below as `docker-compose`; adjust for your installed version.
+
+### 1. Core External Services (required)
+
+Starts the dependencies the app talks to at runtime: **PostgreSQL** (database),
+**Redis** (cache), and **RabbitMQ** (message queue). It also starts
+**RedisInsight**, a web UI for browsing Redis.
+
+| Service        | Port(s)            | Default credentials        |
+| -------------- | ------------------ | -------------------------- |
+| PostgreSQL     | `5432`             | `prabogo` / (from env)     |
+| Redis          | `6379`             | password from env          |
+| RedisInsight   | `5540`             | —                          |
+| RabbitMQ       | `5672` (AMQP), `15672` (UI) | `prabogo` / (from env) |
 
 ```sh
 docker-compose --env-file .env.docker up -d
 ```
 
-## Stop External Services with Docker Compose
+Stop all core services:
 
 ```sh
-docker-compose down
+docker-compose --env-file .env.docker down
 ```
 
-## Start Authentik Services with Docker Compose
+### 2. Authentik (authentication)
 
-To start Authentik authentication services (includes PostgreSQL, Redis, Server, and Worker):
+Starts **Authentik** (identity provider) with its own dedicated **PostgreSQL**
+(`5433`) and **Redis** (`6380`) containers, plus the Authentik **server** and
+**worker**.
+
+| Service         | Port(s)          |
+| --------------- | ---------------- |
+| PostgreSQL      | `5433`           |
+| Redis           | `6380`           |
+| Authentik UI    | `9080` (HTTP), `9443` (HTTPS) |
 
 ```sh
-docker-compose -f docker-compose.authentik.yml up -d
+docker-compose -f docker-compose.authentik.yml --env-file .env.docker up -d
 ```
 
-## Stop Authentik Services with Docker Compose
+Stop Authentik services:
 
 ```sh
-docker-compose -f docker-compose.authentik.yml down
+docker-compose -f docker-compose.authentik.yml --env-file .env.docker down
 ```
 
-## Start Temporal Services with Docker Compose
+### 3. Temporal (workflow engine)
 
-To start Temporal workflow services (includes PostgreSQL, Elasticsearch, Temporal Server, Admin Tools, and Web UI):
+Starts **Temporal** for workflow orchestration, along with its **PostgreSQL**,
+**Elasticsearch**, **Admin Tools**, and the **Web UI**.
+
+| Service   | Port(s)          |
+| --------- | ---------------- |
+| Temporal  | `7233` (gRPC)    |
+| Web UI    | `8080`           |
 
 ```sh
-docker-compose -f docker-compose.temporal.yml up -d
+docker-compose -f docker-compose.temporal.yml --env-file .env.docker up -d
 ```
 
-The Temporal UI will be available at http://localhost:8080 and the Temporal server will be accessible on port 7233.
+The Temporal Web UI will be available at <http://localhost:8080> and the server
+on port `7233`.
 
-## Stop Temporal Services with Docker Compose
+Stop Temporal services:
 
 ```sh
-docker-compose -f docker-compose.temporal.yml down
+docker-compose -f docker-compose.temporal.yml --env-file .env.docker down
 ```
+
+### 4. Observability (OpenTelemetry + Grafana LGTM)
+
+Starts a full **Grafana LGTM** telemetry stack: **Loki** (logs), **Grafana**
+(visualization), **Tempo** (traces), and **Mimir** (metrics), plus an
+**OpenTelemetry Collector** that ingests OTLP data from the application and
+routes each signal to the right backend.
+
+| Service                 | Ports                                             |
+| ----------------------- | ------------------------------------------------- |
+| OpenTelemetry Collector | `4317` (OTLP gRPC), `4318` (OTLP HTTP)            |
+| Loki                    | `3100` (HTTP)                                     |
+| Tempo                   | `3200` (HTTP), `3201` (gRPC)                      |
+| Mimir                   | `9009` (Prometheus API / remote write)            |
+| Grafana                 | `3000` (UI)                                       |
+
+```sh
+docker-compose -f docker-compose.grafana.yml --env-file .env.docker up -d
+```
+
+Grafana is available at <http://localhost:3000> (default `admin` / `changeme`).
+The Loki, Tempo and Mimir datasources are pre-provisioned, and the bundled
+dashboards under `utils/observability/grafana/provisioning/` are auto-loaded, so logs,
+metrics and traces appear immediately.
+
+#### Enable telemetry in the application
+
+Set the following environment variables (see `.env.example`). The app points
+its OTLP endpoints directly at the LGTM collector:
+
+```sh
+OTEL_TRACE_ENABLED=true
+OTEL_METRIC_ENABLED=true
+OTEL_LOG_ENABLED=true
+OTEL_TRACE_ENDPOINT=127.0.0.1:4317
+OTEL_METRIC_ENDPOINT=127.0.0.1:4317
+OTEL_LOG_ENDPOINT=127.0.0.1:4317
+```
+
+#### What is collected
+
+- **Logs**: Every logrus entry is masked by `MaskingHook` before it is written,
+  so both the stdout formatter and the OTLP export (Loki) see the same redacted
+  values. Nested fields inside maps, slices and structs are masked recursively;
+  the default key list lives in `utils/masking` (`bearer_key`, `password`,
+  `token`, `authorization`, `secret`, `api_key`, …) and resolves to
+  `***MASKED***`.
+- **Metrics**: HTTP request count and latency, tagged with method, route, HTTP
+  status code, and an `error` boolean indicating whether the status was >= 400.
+- **Traces**: Every HTTP request starts a server span, and each domain operation
+  (`client.upsert`, `client.find_by_filter`, etc.) is recorded as a child span
+  so you can trace the full flow through the domain.
+
+Stop Observability services:
+
+```sh
+docker-compose -f docker-compose.grafana.yml --env-file .env.docker down
+```
+
+### Running everything at once
+
+You can start multiple stacks together by passing several `-f` flags. For
+example, core services plus observability:
+
+```sh
+docker-compose -f docker-compose.yml -f docker-compose.grafana.yml --env-file .env.docker up -d
+```
+
+To stop everything, run the corresponding `down` command with the same `-f`
+flags.
+
+### Useful Docker Compose commands
+
+| Command | Description |
+| ------- | ----------- |
+| `docker-compose ps` | List running services for the active stack |
+| `docker-compose logs -f <service>` | Follow logs for a single service |
+| `docker-compose restart <service>` | Restart a single service |
+| `docker-compose down` | Stop and remove containers and networks |
+| `docker-compose down -v` | Also remove named volumes (deletes stored data) |
 
 ## Run App in Development Mode
 

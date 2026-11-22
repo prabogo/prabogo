@@ -16,6 +16,12 @@ type clientAdapter struct {
 	domain domain.Domain
 }
 
+const (
+	activityNameUpsert         = "http_client_upsert"
+	activityNameFindByFilter   = "http_client_find_by_filter"
+	activityNameDeleteByFilter = "http_client_delete_by_filter"
+)
+
 func NewClientAdapter(
 	domain domain.Domain,
 ) inbound_port.ClientHttpPort {
@@ -26,7 +32,7 @@ func NewClientAdapter(
 
 func (h *clientAdapter) Upsert(a any) error {
 	c := a.(*fiber.Ctx)
-	ctx := activity.NewContext("http_client_upsert")
+	ctx := newRequestContext(c, activityNameUpsert)
 	var payload []model.ClientInput
 	if err := c.BodyParser(&payload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(model.Response{
@@ -36,15 +42,20 @@ func (h *clientAdapter) Upsert(a any) error {
 	}
 	ctx = context.WithValue(ctx, activity.Payload, payload)
 
+	ctx, span := startDomainSpan(ctx, activityNameUpsert)
+	defer span.End()
+
 	results, err := h.domain.Client().Upsert(ctx, payload)
 	if err != nil {
-		log.WithContext(ctx).Error(err.Error())
+		addSpanAttribute(c, "error.message", stacktrace.RootCause(err).Error())
+		log.WithContext(ctx).Errorf("http client upsert failed: %s", stacktrace.RootCause(err).Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{
 			Success: false,
 			Error:   "Internal Server Error",
 		})
 	}
 
+	log.WithContext(ctx).Info("http client upsert success")
 	return c.JSON(model.Response{
 		Success: true,
 		Data:    results,
@@ -53,9 +64,10 @@ func (h *clientAdapter) Upsert(a any) error {
 
 func (h *clientAdapter) Find(a any) error {
 	c := a.(*fiber.Ctx)
-	ctx := activity.NewContext("http_client_find_by_filter")
+	ctx := newRequestContext(c, activityNameFindByFilter)
 	var payload model.ClientFilter
 	if err := c.BodyParser(&payload); err != nil {
+		log.WithContext(ctx).Errorf("http client find by filter failed: %s", stacktrace.RootCause(err).Error())
 		return c.Status(fiber.StatusBadRequest).JSON(model.Response{
 			Success: false,
 			Error:   err.Error(),
@@ -63,15 +75,21 @@ func (h *clientAdapter) Find(a any) error {
 	}
 	ctx = context.WithValue(ctx, activity.Payload, payload)
 
+	ctx, span := startDomainSpan(ctx, activityNameFindByFilter)
+	defer span.End()
+
 	results, err := h.domain.Client().FindByFilter(ctx, payload)
 	if err != nil {
-		log.WithContext(ctx).Error(err.Error())
+		addSpanAttribute(c, "error.message", stacktrace.RootCause(err).Error())
+		log.WithContext(ctx).Errorf("http client find by filter failed: %s", stacktrace.RootCause(err).Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{
 			Success: false,
 			Error:   "Internal Server Error",
 		})
 	}
 
+	ctx = context.WithValue(ctx, activity.Result, results)
+	log.WithContext(ctx).Info("http client find success")
 	return c.JSON(model.Response{
 		Success: true,
 		Data:    results,
@@ -80,7 +98,7 @@ func (h *clientAdapter) Find(a any) error {
 
 func (h *clientAdapter) Delete(a any) error {
 	c := a.(*fiber.Ctx)
-	ctx := activity.NewContext("http_client_delete_by_filter")
+	ctx := newRequestContext(c, activityNameDeleteByFilter)
 	var payload model.ClientFilter
 	if err := c.BodyParser(&payload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(model.Response{
@@ -90,9 +108,12 @@ func (h *clientAdapter) Delete(a any) error {
 	}
 	ctx = context.WithValue(ctx, activity.Payload, payload)
 
+	ctx, span := startDomainSpan(ctx, activityNameDeleteByFilter)
+	defer span.End()
+
 	err := h.domain.Client().DeleteByFilter(ctx, payload)
 	if err != nil {
-		log.WithContext(ctx).Error(err.Error())
+		addSpanAttribute(c, "error.message", stacktrace.RootCause(err).Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{
 			Success: false,
 			Error:   "Internal Server Error",

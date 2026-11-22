@@ -6,9 +6,9 @@ services:
     volumes:
       - authentik_postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: authentik
-      POSTGRES_USER: authentik
-      POSTGRES_DB: authentik
+      POSTGRES_PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-authentik}
+      POSTGRES_USER: ${AUTHENTIK_POSTGRES_USER:-authentik}
+      POSTGRES_DB: ${AUTHENTIK_POSTGRES_DB:-authentik}
     restart: unless-stopped
 
   authentik-redis:
@@ -18,7 +18,7 @@ services:
     volumes:
       - authentik_redis_data:/data
     restart: unless-stopped
-    command: ["redis-server", "--requirepass", "authentik"]
+    command: ["redis-server", "--requirepass", "${AUTHENTIK_REDIS_PASSWORD:-authentik}"]
 
   authentik-server:
     image: ghcr.io/goauthentik/server:2024.10.1
@@ -26,12 +26,12 @@ services:
     command: server
     environment:
       AUTHENTIK_REDIS__HOST: authentik-redis
-      AUTHENTIK_REDIS__PASSWORD: authentik
+      AUTHENTIK_REDIS__PASSWORD: ${AUTHENTIK_REDIS_PASSWORD:-authentik}
       AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
-      AUTHENTIK_POSTGRESQL__USER: authentik
-      AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__PASSWORD: authentik
-      AUTHENTIK_SECRET_KEY: "authentik-secret-key-change-this-in-production"
+      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_POSTGRES_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_POSTGRES_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-authentik}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-authentik-secret-key-change-this-in-production}
     volumes:
       - authentik_media:/media
       - authentik_custom_templates:/templates
@@ -48,12 +48,12 @@ services:
     command: worker
     environment:
       AUTHENTIK_REDIS__HOST: authentik-redis
-      AUTHENTIK_REDIS__PASSWORD: authentik
+      AUTHENTIK_REDIS__PASSWORD: ${AUTHENTIK_REDIS_PASSWORD:-authentik}
       AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
-      AUTHENTIK_POSTGRESQL__USER: authentik
-      AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__PASSWORD: authentik
-      AUTHENTIK_SECRET_KEY: "authentik-secret-key-change-this-in-production"
+      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_POSTGRES_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_POSTGRES_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-authentik}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-authentik-secret-key-change-this-in-production}
     volumes:
       - authentik_media:/media
       - authentik_custom_templates:/templates
